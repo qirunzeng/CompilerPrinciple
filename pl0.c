@@ -18,7 +18,7 @@ void error(int n)
 	int i;
 
 	printf("      ");
-	for (i = 1; i <= cc - 1; i++)
+	for (i = 1; i <= char_cnt - 1; i++)
 		printf(" ");
 	printf("^\n");
 	printf("Error %3d: %s\n", n, err_msg[n]);
@@ -26,27 +26,26 @@ void error(int n)
 } // error
 
 //////////////////////////////////////////////////////////////////////
-void getch(void)
-{
-	if (cc == ll)
+void getch(void) {
+	if (char_cnt == line_length)
 	{
 		if (feof(infile))
 		{
 			printf("\nPROGRAM INCOMPLETE\n");
 			exit(1);
 		}
-		ll = cc = 0;
+		line_length = char_cnt = 0;
 		printf("%5d  ", cx);
 		while ( (!feof(infile)) // added & modified by alex 01-02-09
 			    && ((ch = getc(infile)) != '\n'))
 		{
 			printf("%c", ch);
-			line[++ll] = ch;
+			line[++line_length] = ch;
 		} // while
 		printf("\n");
-		line[++ll] = ' ';
+		line[++line_length] = ' ';
 	}
-	ch = line[++cc];
+	ch = line[++char_cnt];
 } // getch
 
 //////////////////////////////////////////////////////////////////////

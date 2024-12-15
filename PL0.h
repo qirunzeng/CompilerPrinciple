@@ -117,8 +117,8 @@ char ch;         // last character read
 int  sym;        // last symbol read
 char id[MAXIDLEN + 1]; // last identifier read
 int  num;        // last number read
-int  cc;         // character count
-int  ll;         // line length
+int  char_cnt;         // character count
+int  line_length;         // line length
 int  kk;
 int  err;
 int  cx;         // index of current instruction to be generated.
@@ -148,7 +148,7 @@ const int ssym[NSYM + 1] =
 	SYM_LPAREN, SYM_RPAREN, SYM_EQU, SYM_COMMA, SYM_PERIOD, SYM_SEMICOLON
 };
 
-const char csym[NSYM + 1] =
+char csym[NSYM + 1] =
 {
 	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';'
 };
