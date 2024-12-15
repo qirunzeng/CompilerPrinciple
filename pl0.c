@@ -138,12 +138,29 @@ void getsym(void)
 		}
 	}
     else if (ch == '&') {
+        getch();
+        if (ch == '&') {
+            sym = SYM_AND;
+            getch();
+        }
         // TODO
     }
     else if (ch == '|') {
+        getch();
+        if (ch == '|') {
+            sym = SYM_OR;
+            getch();
+        }
         // TODO
     }
     else if (ch == '!') {
+        getch();
+        if (ch == '=') {
+            sym = SYM_NEQ;
+            getch();
+        } else {
+            sym = SYM_NOT;
+        }
         // TODO
     }
 	else

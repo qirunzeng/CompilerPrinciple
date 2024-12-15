@@ -46,9 +46,9 @@ enum symtype
 	SYM_CONST,
 	SYM_VAR,
 	SYM_PROCEDURE,
-    SYM_NOT,
     SYM_AND,
-    SYM_OR
+    SYM_OR,
+    SYM_NOT
 };
 
 enum idtype
