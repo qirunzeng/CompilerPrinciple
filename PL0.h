@@ -1,4 +1,12 @@
+#ifndef _PL0_H_
+#define _PL0_H_
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdio.h>
+#include "set.h"
 
 #define NRW        11     // number of reserved words
 #define TXMAX      500    // length of identifier table
@@ -80,96 +88,42 @@ typedef struct
 } instruction;
 
 //////////////////////////////////////////////////////////////////////
-const char* err_msg[] =
-{
-/*  0 */    "",
-/*  1 */    "Found ':=' when expecting '='.",
-/*  2 */    "There must be a number to follow '='.",
-/*  3 */    "There must be an '=' to follow the identifier.",
-/*  4 */    "There must be an identifier to follow 'const', 'var', or 'procedure'.",
-/*  5 */    "Missing ',' or ';'.",
-/*  6 */    "Incorrect procedure name.",
-/*  7 */    "Statement expected.",
-/*  8 */    "Follow the statement is an incorrect symbol.",
-/*  9 */    "'.' expected.",
-/* 10 */    "';' expected.",
-/* 11 */    "Undeclared identifier.",
-/* 12 */    "Illegal assignment.",
-/* 13 */    "':=' expected.",
-/* 14 */    "There must be an identifier to follow the 'call'.",
-/* 15 */    "A constant or variable can not be called.",
-/* 16 */    "'then' expected.",
-/* 17 */    "';' or 'end' expected.",
-/* 18 */    "'do' expected.",
-/* 19 */    "Incorrect symbol.",
-/* 20 */    "Relative operators expected.",
-/* 21 */    "Procedure identifier can not be in an expression.",
-/* 22 */    "Missing ')'.",
-/* 23 */    "The symbol can not be followed by a factor.",
-/* 24 */    "The symbol can not be as the beginning of an expression.",
-/* 25 */    "The number is too great.",
-/* 26 */    "",
-/* 27 */    "",
-/* 28 */    "",
-/* 29 */    "",
-/* 30 */    "",
-/* 31 */    "",
-/* 32 */    "There are too many levels."
-};
+extern const char* err_msg[];
 
 //////////////////////////////////////////////////////////////////////
-char ch;         // last character read
-int  sym;        // last symbol read
-char id[MAXIDLEN + 1]; // last identifier read
-int  num;        // last number read
-int  char_cnt;         // character count
-int  line_length;         // line length
-int  kk;
-int  err;
-int  curr_ins;         // index of current instruction to be generated.
-int  level = 0;
-int  tx = 0;
+extern char ch;         // last character read
+extern int  sym;        // last symbol read
+extern char id[MAXIDLEN + 1]; // last identifier read
+extern int  num;        // last number read
+extern int  char_cnt;         // character count
+extern int  line_length;         // line length
+extern int  kk;
+extern int  err;
+extern int  curr_ins;         // index of current instruction to be generated.
+extern int  level;
+extern int  tx;
+extern int dx;  // data allocation index
 
-char line[80];
+extern char line[80];
 
-instruction code[CXMAX];
+extern instruction code[CXMAX];
 
 /**
  * 关键字
  */
-const char* word[NRW + 1] =
-{
-	"", /* place holder */
-	"begin", "call", "const", "do", "end","if",
-	"odd", "procedure", "then", "var", "while"
-};
+extern const char* word[NRW + 1];
 
 
 /**
  * 关键字
  */
-int wsym[NRW + 1] =
-{
-	SYM_NULL, SYM_BEGIN, SYM_CALL, SYM_CONST, SYM_DO, SYM_END,
-	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE
-};
+extern const int wsym[NRW + 1];
 
-const int ssym[NSYM+1] =
-{
-	SYM_NULL, SYM_PLUS, SYM_MINUS, SYM_TIMES, SYM_SLASH,
-	SYM_LPAREN, SYM_RPAREN, SYM_EQU, SYM_COMMA, SYM_PERIOD, SYM_SEMICOLON, SYM_AND, SYM_OR, SYM_NOT
-};
+extern const int ssym[NSYM+1];
 
-char csym[NSYM+1] =
-{
-	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'
-};
-
+extern char csym[NSYM+1];
 #define MAXINS   8
-const char* mnemonic[MAXINS] =
-{
-	"LIT", "OPR", "LOD", "STO", "CAL", "INT", "JMP", "JPC"
-};
+extern const char* mnemonic[MAXINS];
 
 typedef struct
 {
@@ -178,7 +132,7 @@ typedef struct
 	int  value;
 } comtab;
 
-comtab table[TXMAX];
+extern comtab table[TXMAX];
 
 typedef struct
 {
@@ -188,6 +142,27 @@ typedef struct
 	short address;
 } mask;
 
-FILE* infile;
+extern FILE* infile;
 
+
+void error(int);
+void getch();
+void getsym();
+void gen(int, int, int);
+void test(symset, symset, int);
+void enter(int);
+int position(char*);
+void constdeclaration();
+void vardeclaration();
+void listcode(int, int);
+void factor(symset);
+void term(symset);
+void expression(symset);
+void condition(symset);
+void statement(symset);
+void block(symset);
+int base(int [], int, int);
+void interpret();
+
+#endif /**pl0.h */
 // EOF PL0.h
