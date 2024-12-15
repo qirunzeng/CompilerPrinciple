@@ -14,41 +14,43 @@
 
 #define STACKSIZE  1000   // maximum storage
 
-enum symtype
-{
-	SYM_NULL,
-	SYM_IDENTIFIER,
-	SYM_NUMBER,
-	SYM_PLUS,
-	SYM_MINUS,
-	SYM_TIMES,
-	SYM_SLASH,
-	SYM_ODD,
-	SYM_EQU,
-	SYM_NEQ,
-	SYM_LES,
-	SYM_LEQ,
-	SYM_GTR,
-	SYM_GEQ,
-	SYM_LPAREN,
-	SYM_RPAREN,
-	SYM_COMMA,
-	SYM_SEMICOLON,
-	SYM_PERIOD,
-	SYM_BECOMES,
-    SYM_BEGIN,
-	SYM_END,
-	SYM_IF,
-	SYM_THEN,
-	SYM_WHILE,
-	SYM_DO,
-	SYM_CALL,
-	SYM_CONST,
-	SYM_VAR,
-	SYM_PROCEDURE,
-    SYM_AND,
-    SYM_OR,
-    SYM_NOT
+/**
+ * 符号
+ */
+enum symtype {
+	SYM_NULL,       // 
+	SYM_IDENTIFIER, // 标识符
+	SYM_NUMBER,     // 数字
+	SYM_PLUS,       // +
+	SYM_MINUS,      // -
+	SYM_TIMES,      // *
+	SYM_SLASH,      // /
+	SYM_ODD,        // odd
+	SYM_EQU,        // =
+	SYM_NEQ,        // <>
+	SYM_LES,        // <
+	SYM_LEQ,        // <=
+	SYM_GTR,        // >
+	SYM_GEQ,        // >=
+	SYM_LPAREN,     // (
+	SYM_RPAREN,     // )
+	SYM_COMMA,      // ,
+	SYM_SEMICOLON,  // ;
+	SYM_PERIOD,     // .
+	SYM_BECOMES,    // :=
+    SYM_BEGIN,      // begin
+	SYM_END,        // end
+	SYM_IF,         // if
+	SYM_THEN,       // then
+	SYM_WHILE,      // while
+	SYM_DO,         // do
+	SYM_CALL,       // call
+	SYM_CONST,      // const
+	SYM_VAR,        // var
+	SYM_PROCEDURE,  // procedure
+    SYM_AND,        // &&
+    SYM_OR,         // ||
+    SYM_NOT         // !
 };
 
 enum idtype

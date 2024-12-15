@@ -76,15 +76,13 @@ void getsym(void)
 	{ // symbol is a number.
 		k = num = 0;
 		sym = SYM_NUMBER;
-		do
-		{
+		do {
 			num = num * 10 + ch - '0';
 			k++;
 			getch();
-		}
-		while (isdigit(ch));
+		} while (isdigit(ch));
 		if (k > MAXNUMLEN)
-			error(25);     // The number is too great.
+			error(25);     // The number is too large.
 	}
 	else if (ch == ':')
 	{
@@ -174,12 +172,10 @@ void getsym(void)
 	}
 } // getsym
 
-//////////////////////////////////////////////////////////////////////
 // generates (assembles) an instruction.
 void gen(int x, int y, int z)
 {
-	if (curr_ins > CXMAX)
-	{
+	if (curr_ins > CXMAX) {
 		printf("Fatal Error: Program too long.\n");
 		exit(1);
 	}
@@ -188,12 +184,10 @@ void gen(int x, int y, int z)
 	code[curr_ins++].addr = z;
 } // gen
 
-//////////////////////////////////////////////////////////////////////
 // tests if error occurs and skips all symbols that do not belongs to s1 or s2.
 void test(symset s1, symset s2, int n)
 {
 	symset s;
-
 	if (! inset(sym, s1))
 	{
 		error(n);
@@ -204,7 +198,6 @@ void test(symset s1, symset s2, int n)
 	}
 } // test
 
-//////////////////////////////////////////////////////////////////////
 int dx;  // data allocation index
 
 // enter object(constant, variable or procedre) into table.
@@ -237,7 +230,6 @@ void enter(int kind)
 	} // switch
 } // enter
 
-//////////////////////////////////////////////////////////////////////
 // locates identifier in symbol table.
 int position(char* id)
 {
@@ -248,16 +240,18 @@ int position(char* id)
 	return i;
 } // position
 
-//////////////////////////////////////////////////////////////////////
-void constdeclaration()
-{
+
+/**
+ * @brief 用于处理常量声明
+ */
+void constdeclaration() {
 	if (sym == SYM_IDENTIFIER)
 	{
 		getsym();
-		if (sym == SYM_EQU || sym == SYM_BECOMES)
-		{
-			if (sym == SYM_BECOMES)
+		if (sym == SYM_EQU || sym == SYM_BECOMES) {
+			if (sym == SYM_BECOMES) {
 				error(1); // Found ':=' when expecting '='.
+            }
 			getsym();
 			if (sym == SYM_NUMBER)
 			{
