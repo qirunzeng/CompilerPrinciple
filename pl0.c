@@ -13,43 +13,36 @@
 
 //////////////////////////////////////////////////////////////////////
 // print error message.
-void error(int n)
-{
+void error(int n) {
 	int i;
-
 	printf("      ");
-	for (i = 1; i <= char_cnt - 1; i++)
+	for (i = 1; i+1 <= char_cnt; i++) {
 		printf(" ");
+    }
 	printf("^\n");
 	printf("Error %3d: %s\n", n, err_msg[n]);
 	err++;
 } // error
 
-//////////////////////////////////////////////////////////////////////
 void getch(void) {
-    // 
-	if (char_cnt == line_length)
-	{
-		if (feof(infile))
-		{
+    // 读取一个字符，并存入 ch 中
+	if (char_cnt == line_length) {
+		if (feof(infile)) {
 			printf("\nPROGRAM INCOMPLETE\n");
 			exit(1);
 		}
 		line_length = char_cnt = 0;
-		printf("%5d  ", cx);
-		while ( (!feof(infile)) // added & modified by alex 01-02-09
-			    && ((ch = getc(infile)) != '\n'))
-		{
+		printf("%5d  ", curr_ins);
+		while ( (!feof(infile)) && ((ch = getc(infile)) != '\n')) {
 			printf("%c", ch);
 			line[++line_length] = ch;
-		} // while
+		}
 		printf("\n");
 		line[++line_length] = ' ';
 	}
 	ch = line[++char_cnt];
 } // getch
 
-//////////////////////////////////////////////////////////////////////
 // gets a symbol from input stream.
 void getsym(void)
 {
@@ -185,14 +178,14 @@ void getsym(void)
 // generates (assembles) an instruction.
 void gen(int x, int y, int z)
 {
-	if (cx > CXMAX)
+	if (curr_ins > CXMAX)
 	{
 		printf("Fatal Error: Program too long.\n");
 		exit(1);
 	}
-	code[cx].func_code = x;
-	code[cx].level = y;
-	code[cx++].addr = z;
+	code[curr_ins].func_code = x;
+	code[curr_ins].level = y;
+	code[curr_ins++].addr = z;
 } // gen
 
 //////////////////////////////////////////////////////////////////////
@@ -561,10 +554,10 @@ void statement(symset fsys)
 		{
 			error(16); // 'then' expected.
 		}
-		cx1 = cx;
+		cx1 = curr_ins;
 		gen(JPC, 0, 0);
 		statement(fsys);
-		code[cx1].addr = cx;	
+		code[cx1].addr = curr_ins;
 	}
 	else if (sym == SYM_BEGIN)
 	{ // block
@@ -597,14 +590,14 @@ void statement(symset fsys)
 	}
 	else if (sym == SYM_WHILE)
 	{ // while statement
-		cx1 = cx;
+		cx1 = curr_ins;
 		getsym();
 		set1 = createset(SYM_DO, SYM_NULL);
 		set = uniteset(set1, fsys);
 		condition(set);
 		destroyset(set1);
 		destroyset(set);
-		cx2 = cx;
+		cx2 = curr_ins;
 		gen(JPC, 0, 0);
 		if (sym == SYM_DO)
 		{
@@ -616,7 +609,7 @@ void statement(symset fsys)
 		}
 		statement(fsys);
 		gen(JMP, 0, cx1);
-		code[cx2].addr = cx;
+		code[cx2].addr = curr_ins;
 	}
 	test(fsys, phi, 19);
 } // statement
@@ -633,7 +626,7 @@ void block(symset fsys)
 	dx = 3;
 	block_dx = dx;
 	mk = (mask*) &table[tx];
-	mk->address = cx;
+	mk->address = curr_ins;
 	gen(JMP, 0, 0);
 	if (level > MAXLEVEL)
 	{
@@ -743,9 +736,9 @@ void block(symset fsys)
 	}
 	while (inset(sym, declbegsys));
 
-	code[mk->address].addr = cx;
-	mk->address = cx;
-	cx0 = cx;
+	code[mk->address].addr = curr_ins;
+	mk->address = curr_ins;
+	cx0 = curr_ins;
 	gen(INT, 0, block_dx);
 	set1 = createset(SYM_SEMICOLON, SYM_END, SYM_NULL);
 	set = uniteset(set1, fsys);
@@ -754,7 +747,7 @@ void block(symset fsys)
 	destroyset(set);
 	gen(OPR, 0, OPR_RET); // return
 	test(fsys, phi, 8); // test for error: Follow the statement is an incorrect symbol.
-	listcode(cx0, cx);
+	listcode(cx0, curr_ins);
 } // block
 
 //////////////////////////////////////////////////////////////////////
@@ -911,7 +904,7 @@ int main ()
 	statbegsys = createset(SYM_BEGIN, SYM_CALL, SYM_IF, SYM_WHILE, SYM_NULL);
 	facbegsys = createset(SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_NULL);
 
-	err = char_cnt = cx = line_length = 0; // initialize global variables
+	err = char_cnt = curr_ins = line_length = 0; // initialize global variables
 	ch = ' ';
 	kk = MAXIDLEN;
 
@@ -935,7 +928,7 @@ int main ()
 	if (err == 0)
 	{
 		hbin = fopen("hbin.txt", "w");
-		for (i = 0; i < cx; i++)
+		for (i = 0; i < curr_ins; i++)
 			fwrite(&code[i], sizeof(instruction), 1, hbin);
 		fclose(hbin);
 	}
@@ -943,7 +936,7 @@ int main ()
 		interpret();
 	else
 		printf("There are %d error(s) in PL/0 program.\n", err);
-	listcode(0, cx);
+	listcode(0, curr_ins);
     return 0;
 } // main
 

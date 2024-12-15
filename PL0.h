@@ -124,7 +124,7 @@ int  char_cnt;         // character count
 int  line_length;         // line length
 int  kk;
 int  err;
-int  cx;         // index of current instruction to be generated.
+int  curr_ins;         // index of current instruction to be generated.
 int  level = 0;
 int  tx = 0;
 
