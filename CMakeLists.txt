@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 # Set the project name
 project(pl0_compiler)
 
-# Specify the C++ standard
+# Specify the C standard
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
