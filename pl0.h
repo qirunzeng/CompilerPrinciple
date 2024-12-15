@@ -76,7 +76,7 @@ enum oprcode
 	OPR_RET, OPR_NEG, OPR_ADD, OPR_MIN,
 	OPR_MUL, OPR_DIV, OPR_ODD, OPR_EQU,
 	OPR_NEQ, OPR_LES, OPR_LEQ, OPR_GTR,
-	OPR_GEQ
+	OPR_GEQ, OPR_AND, OPR_OR, OPR_NOT
 };
 
 
@@ -93,7 +93,7 @@ extern const char* err_msg[];
 //////////////////////////////////////////////////////////////////////
 extern char ch;         // last character read
 extern int  sym;        // last symbol read
-extern char id[MAXIDLEN + 1]; // last identifier read
+extern char id[MAXIDLEN+1]; // last identifier read
 extern int  num;        // last number read
 extern int  char_cnt;         // character count
 extern int  line_length;         // line length
@@ -102,7 +102,7 @@ extern int  err;
 extern int  curr_ins;         // index of current instruction to be generated.
 extern int  level;
 extern int  tx;
-extern int dx;  // data allocation index
+extern int  dx;  // data allocation index
 
 extern char line[80];
 
@@ -134,8 +134,10 @@ typedef struct
 
 extern comtab table[TXMAX];
 
-typedef struct
-{
+/**
+ * 符号集
+ */
+typedef struct {
 	char  name[MAXIDLEN + 1];
 	int   kind;
 	short level;

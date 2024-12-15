@@ -209,6 +209,8 @@ void getsym(void) {
         if (ch == '&') {
             sym = SYM_AND;
             getch();
+        } else {
+            sym = SYM_NULL;    // illegal?
         }
         // TODO
     }
@@ -264,7 +266,7 @@ void gen(int x, int y, int z)
 void test(symset s1, symset s2, int n)
 {
 	symset s;
-	if (! inset(sym, s1))
+	if (!inset(sym, s1))
 	{
 		error(n);
 		s = uniteset(s1, s2);
@@ -276,10 +278,8 @@ void test(symset s1, symset s2, int n)
 
 
 // enter object(constant, variable or procedre) into table.
-void enter(int kind)
-{
+void enter(int kind) {
 	mask* mk;
-
 	tx++;
 	strcpy(table[tx].name, id);
 	table[tx].kind = kind;
@@ -440,6 +440,11 @@ void factor(symset fsys)
 			 factor(fsys);
 			 gen(OPR, 0, OPR_NEG);
 		}
+        else if (sym == SYM_NOT) { // ! NOT, Expr -> '!' Expr
+            getsym();
+            factor(fsys);
+            gen(OPR, 0, OPR_NOT);
+        }
 		test(fsys, createset(SYM_LPAREN, SYM_NULL), 23);
 	} // if
 } // factor
@@ -469,32 +474,48 @@ void term(symset fsys)
 	destroyset(set);
 } // term
 
+void expression(symset fsys) {
+    symset set;
+    int logop;
+
+    term(fsys);  // 处理最高优先级项
+    while (sym == SYM_AND || sym == SYM_OR) {
+        logop = sym;
+        getsym();
+        term(fsys);  // 与或操作符后的项
+
+        if (logop == SYM_AND) {
+            gen(OPR, 0, OPR_AND);  // 生成逻辑与代码
+        } else {
+            gen(OPR, 0, OPR_OR);   // 生成逻辑或代码
+        }
+    }
+}
 //////////////////////////////////////////////////////////////////////
-void expression(symset fsys)
-{
-	int addop;
-	symset set;
+// void expression(symset fsys)
+// {
+// 	int addop;
+// 	symset set;
 
-	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_NULL));
+// 	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_NULL));
 	
-	term(set);
-	while (sym == SYM_PLUS || sym == SYM_MINUS)
-	{
-		addop = sym;
-		getsym();
-		term(set);
-		if (addop == SYM_PLUS)
-		{
-			gen(OPR, 0, OPR_ADD);
-		}
-		else
-		{
-			gen(OPR, 0, OPR_MIN);
-		}
-	} // while
-
-	destroyset(set);
-} // expression
+// 	term(set);
+// 	while (sym == SYM_PLUS || sym == SYM_MINUS)
+// 	{
+// 		addop = sym;
+// 		getsym();
+// 		term(set);
+// 		if (addop == SYM_PLUS)
+// 		{
+// 			gen(OPR, 0, OPR_ADD);
+// 		}
+// 		else
+// 		{
+// 			gen(OPR, 0, OPR_MIN);
+// 		}
+//  } // while
+// 	destroyset(set);
+// } // expression
 
 //////////////////////////////////////////////////////////////////////
 void condition(symset fsys)
@@ -913,6 +934,17 @@ void interpret()
 				top--;
 				stack[top] = stack[top] <= stack[top + 1];
 				break;
+            case OPR_AND: // ! AND
+                top--;
+                stack[top] = stack[top] && stack[top + 1];
+                break;
+            case OPR_OR:  // ! OR
+                top--;
+                stack[top] = stack[top] || stack[top + 1];
+                break;
+            case OPR_NOT: // ! NOT
+                stack[top] = !stack[top];
+                break;
 			} // switch
 			break;
 		case LOD:
