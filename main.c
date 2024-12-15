@@ -1,4 +1,4 @@
-#include "pl0.c"
+#include "pl0.h"
 
 int main ()
 {

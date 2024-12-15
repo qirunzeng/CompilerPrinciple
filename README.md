@@ -1,5 +1,7 @@
 # PL0
 
+使用：`cd build; cmake ..; make; ./pl0_compiler`
+
 ## TODO
 
 - [] 实现注释功能：
@@ -19,3 +21,4 @@
     - [] `else, elif, exit`
     - [] `return`
     - [] `for`
+
