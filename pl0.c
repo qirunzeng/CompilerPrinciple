@@ -27,6 +27,7 @@ void error(int n)
 
 //////////////////////////////////////////////////////////////////////
 void getch(void) {
+    // 
 	if (char_cnt == line_length)
 	{
 		if (feof(infile))
@@ -163,9 +164,9 @@ void gen(int x, int y, int z)
 		printf("Fatal Error: Program too long.\n");
 		exit(1);
 	}
-	code[cx].f = x;
-	code[cx].l = y;
-	code[cx++].a = z;
+	code[cx].func_code = x;
+	code[cx].level = y;
+	code[cx++].addr = z;
 } // gen
 
 //////////////////////////////////////////////////////////////////////
@@ -279,7 +280,7 @@ void listcode(int from, int to)
 	printf("\n");
 	for (i = from; i < to; i++)
 	{
-		printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].f], code[i].l, code[i].a);
+		printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].func_code], code[i].level, code[i].addr);
 	}
 	printf("\n");
 } // listcode
@@ -537,7 +538,7 @@ void statement(symset fsys)
 		cx1 = cx;
 		gen(JPC, 0, 0);
 		statement(fsys);
-		code[cx1].a = cx;	
+		code[cx1].addr = cx;	
 	}
 	else if (sym == SYM_BEGIN)
 	{ // block
@@ -589,7 +590,7 @@ void statement(symset fsys)
 		}
 		statement(fsys);
 		gen(JMP, 0, cx1);
-		code[cx2].a = cx;
+		code[cx2].addr = cx;
 	}
 	test(fsys, phi, 19);
 } // statement
@@ -716,7 +717,7 @@ void block(symset fsys)
 	}
 	while (inset(sym, declbegsys));
 
-	code[mk->address].a = cx;
+	code[mk->address].addr = cx;
 	mk->address = cx;
 	cx0 = cx;
 	gen(INT, 0, block_dx);
@@ -759,13 +760,13 @@ void interpret()
 	do
 	{
 		i = code[pc++];
-		switch (i.f)
+		switch (i.func_code)
 		{
 		case LIT:
-			stack[++top] = i.a;
+			stack[++top] = i.addr;
 			break;
 		case OPR:
-			switch (i.a) // operator
+			switch (i.addr) // operator
 			{
 			case OPR_RET:
 				top = b - 1;
@@ -827,30 +828,30 @@ void interpret()
 			} // switch
 			break;
 		case LOD:
-			stack[++top] = stack[base(stack, b, i.l) + i.a];
+			stack[++top] = stack[base(stack, b, i.level) + i.addr];
 			break;
 		case STO:
-			stack[base(stack, b, i.l) + i.a] = stack[top];
+			stack[base(stack, b, i.level) + i.addr] = stack[top];
 			printf("%d\n", stack[top]);
 			top--;
 			break;
 		case CAL:
-			stack[top + 1] = base(stack, b, i.l);
+			stack[top + 1] = base(stack, b, i.level);
 			// generate new block mark
 			stack[top + 2] = b;
 			stack[top + 3] = pc;
 			b = top + 1;
-			pc = i.a;
+			pc = i.addr;
 			break;
 		case INT:
-			top += i.a;
+			top += i.addr;
 			break;
 		case JMP:
-			pc = i.a;
+			pc = i.addr;
 			break;
 		case JPC:
 			if (stack[top] == 0)
-				pc = i.a;
+				pc = i.addr;
 			top--;
 			break;
 		} // switch
@@ -861,7 +862,7 @@ void interpret()
 } // interpret
 
 //////////////////////////////////////////////////////////////////////
-void main ()
+int main ()
 {
 	FILE* hbin;
 	char s[80];
@@ -884,7 +885,7 @@ void main ()
 	statbegsys = createset(SYM_BEGIN, SYM_CALL, SYM_IF, SYM_WHILE, SYM_NULL);
 	facbegsys = createset(SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_NULL);
 
-	err = cc = cx = ll = 0; // initialize global variables
+	err = char_cnt = cx = line_length = 0; // initialize global variables
 	ch = ' ';
 	kk = MAXIDLEN;
 
@@ -917,6 +918,7 @@ void main ()
 	else
 		printf("There are %d error(s) in PL/0 program.\n", err);
 	listcode(0, cx);
+    return 0;
 } // main
 
 //////////////////////////////////////////////////////////////////////
