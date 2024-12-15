@@ -158,9 +158,9 @@ const int ssym[NSYM+1] =
 	SYM_LPAREN, SYM_RPAREN, SYM_EQU, SYM_COMMA, SYM_PERIOD, SYM_SEMICOLON, SYM_AND, SYM_OR, SYM_NOT
 };
 
-char *csym[] =
+char csym[NSYM+1] =
 {
-	" ", "+", "-", "*", "/", "(", ")", "=", ",", ".", ";", "&&", "||", "!"
+	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'
 };
 
 #define MAXINS   8

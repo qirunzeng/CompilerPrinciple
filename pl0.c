@@ -137,6 +137,15 @@ void getsym(void)
 			sym = SYM_LES;     // <
 		}
 	}
+    else if (ch == '&') {
+        // TODO
+    }
+    else if (ch == '|') {
+        // TODO
+    }
+    else if (ch == '!') {
+        // TODO
+    }
 	else
 	{ // other tokens
 		i = NSYM;
