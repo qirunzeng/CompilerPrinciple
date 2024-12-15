@@ -1,6 +1,13 @@
 # PL0
 
-使用：`mkdir build; cd build; cmake ..; make; ./pl0_compiler`
+使用：
+```bash
+mkdir build
+cd build
+cmake ..
+make
+./pl0_compiler
+```
 
 ## TODO
 
