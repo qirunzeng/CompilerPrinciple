@@ -1,0 +1,7 @@
+var i,j;
+begin
+  i := 1;
+  j := 0;
+  if i&&j||(i+j) then
+     i:= 3;
+end.
