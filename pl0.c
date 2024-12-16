@@ -469,7 +469,7 @@ void expression(symset fsys) {
 	symset set;
 
 	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_NULL));
-	
+	// printf("expression: %d\n", sym);
 	term(set);
 	while (sym == SYM_PLUS || sym == SYM_MINUS) {
 		addop = sym;
@@ -491,12 +491,12 @@ void expression(symset fsys) {
 void logic_expression(symset fsys) {
     int logop;
     symset set;
-
-    expression(fsys); // 项
+    set = uniteset(fsys, createset(SYM_AND, SYM_OR, SYM_NULL));
+    expression(set); // 项
     while (sym == SYM_AND || sym == SYM_OR) {
         logop = sym;
         getsym();
-        expression(fsys);
+        expression(set);
         if (logop == SYM_AND) {
             gen(OPR, 0, OPR_AND);  // 生成逻辑与代码
         } else {
@@ -796,6 +796,7 @@ void block(symset fsys)
 
 	code[mk->address].addr = curr_ins;
 	mk->address = curr_ins;
+
 	cx0 = curr_ins;
 	gen(INT, 0, block_data_alloc_index);
 	set1 = createset(SYM_SEMICOLON, SYM_END, SYM_NULL);
