@@ -319,30 +319,29 @@ int position(char* id)
  * @brief 用于处理常量声明
  */
 void constdeclaration() {
-	if (sym == SYM_IDENTIFIER)
-	{
+	if (sym == SYM_IDENTIFIER) {
 		getsym();
 		if (sym == SYM_EQU || sym == SYM_BECOMES) {
 			if (sym == SYM_BECOMES) {
 				error(1); // Found ':=' when expecting '='.
             }
 			getsym();
-			if (sym == SYM_NUMBER)
-			{
+			if (sym == SYM_NUMBER) {
 				enter(ID_CONSTANT);
 				getsym();
 			}
-			else
-			{
+			else {
 				error(2); // There must be a number to follow '='.
 			}
 		}
-		else
-		{
+		else {
 			error(3); // There must be an '=' to follow the identifier.
 		}
-	} else	error(4);
-	 // There must be an identifier to follow 'const', 'var', or 'procedure'.
+	} 
+    else {
+        error(4);
+    }
+	// There must be an identifier to follow 'const', 'var', or 'procedure'.
 } // constdeclaration
 
 //////////////////////////////////////////////////////////////////////
@@ -373,14 +372,14 @@ void listcode(int from, int to)
 } // listcode
 
 //////////////////////////////////////////////////////////////////////
-void factor(symset fsys)
-{
+/**
+ * @brief 处理因子
+ */
+void factor(symset fsys) {
 	void expression(symset fsys);
 	int i;
 	symset set;
-	
 	test(facbegsys, fsys, 24); // The symbol can not be as the beginning of an expression.
-
 	if (inset(sym, facbegsys)) {
 		if (sym == SYM_IDENTIFIER) {
 			if ((i = position(id)) == 0) {
@@ -403,24 +402,20 @@ void factor(symset fsys)
 			}
 			getsym();
 		}
-		else if (sym == SYM_NUMBER)
-		{
-			if (num > MAXADDRESS)
-			{
+		else if (sym == SYM_NUMBER) { // number
+			if (num > MAXADDRESS) {
 				error(25); // The number is too great.
 				num = 0;
 			}
 			gen(LIT, 0, num);
 			getsym();
 		}
-		else if (sym == SYM_LPAREN)
-		{
+		else if (sym == SYM_LPAREN) { // '('
 			getsym();
 			set = uniteset(createset(SYM_RPAREN, SYM_NULL), fsys);
 			expression(set);
 			destroyset(set);
-			if (sym == SYM_RPAREN)
-			{
+			if (sym == SYM_RPAREN) {
 				getsym();
 			}
 			else
@@ -468,79 +463,68 @@ void term(symset fsys)
 	destroyset(set);
 } // term
 
-/**
- * @brief 逻辑表达式
- */
-// void expression(symset fsys) {
-//     symset set;
-//     int logop;
 
-//     term(fsys);  // 处理最高优先级项
-//     while (sym == SYM_AND || sym == SYM_OR) {
-//         logop = sym;
-//         getsym();
-//         term(fsys);  // 与或操作符后的项
-
-//         if (logop == SYM_AND) {
-//             gen(OPR, 0, OPR_AND);  // 生成逻辑与代码
-//         } else {
-//             gen(OPR, 0, OPR_OR);   // 生成逻辑或代码
-//         }
-//     }
-// }
-//////////////////////////////////////////////////////////////////////
-void expression(symset fsys)
-{
+void expression(symset fsys) {
 	int addop;
 	symset set;
 
 	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_NULL));
 	
 	term(set);
-	while (sym == SYM_PLUS || sym == SYM_MINUS)
-	{
+	while (sym == SYM_PLUS || sym == SYM_MINUS) {
 		addop = sym;
 		getsym();
 		term(set);
-		if (addop == SYM_PLUS)
-		{
+		if (addop == SYM_PLUS) {
 			gen(OPR, 0, OPR_ADD);
 		}
-		else
-		{
+		else {
 			gen(OPR, 0, OPR_MIN);
 		}
- } // while
+    } // while
 	destroyset(set);
 } // expression
 
-void condition(symset fsys)
-{
+/**
+ * @brief 逻辑表达式
+ */
+void logic_expression(symset fsys) {
+    int logop;
+    symset set;
+
+    expression(fsys); // 项
+    while (sym == SYM_AND || sym == SYM_OR) {
+        logop = sym;
+        getsym();
+        expression(fsys);
+        if (logop == SYM_AND) {
+            gen(OPR, 0, OPR_AND);  // 生成逻辑与代码
+        } else {
+            gen(OPR, 0, OPR_OR);   // 生成逻辑或代码
+        }
+    }
+}
+
+void condition(symset fsys) {
 	int relop;
 	symset set;
 
-	if (sym == SYM_ODD)
-	{
+	if (sym == SYM_ODD) {
 		getsym();
-		expression(fsys);
+		logic_expression(fsys);
 		gen(OPR, 0, 6);
-	}
-	else
-	{
+	} else {
 		set = uniteset(relset, fsys);
-		expression(set);
+		logic_expression(set);
 		destroyset(set);
-		if (! inset(sym, relset))
-		{
+		if (! inset(sym, relset)) {
 			error(20);
 		}
-		else
-		{
+		else {
 			relop = sym;
 			getsym();
-			expression(fsys);
-			switch (relop)
-			{
+			logic_expression(fsys);
+			switch (relop) {
 			case SYM_EQU:
 				gen(OPR, 0, OPR_EQU);
 				break;
@@ -591,7 +575,7 @@ void statement(symset fsys)
 		{
 			error(13); // ':=' expected.
 		}
-		expression(fsys);
+		logic_expression(fsys);
 		mk = (mask*) &table[i];
 		if (i)
 		{
@@ -701,6 +685,9 @@ void statement(symset fsys)
 } // statement
 			
 //////////////////////////////////////////////////////////////////////
+/**
+ * @brief 处理块，包括常量声明、变量声明、过程声明、语句
+ */
 void block(symset fsys)
 {
 	int cx0; // initial code index
@@ -714,36 +701,31 @@ void block(symset fsys)
 	mk = (mask*) &table[table_index];
 	mk->address = curr_ins;
 	gen(JMP, 0, 0);
-	if (level > MAXLEVEL)
-	{
+	if (level > MAXLEVEL) {
 		error(32); // There are too many levels.
 	}
-	do
-	{
-		if (sym == SYM_CONST)
-		{ // constant declarations
+	do { // while (inset(sym, declbegsys))
+		if (sym == SYM_CONST) { 
+            // constant declarations
 			getsym();
-			do
-			{
+			do { // while (sym == SYM_IDENTIFIER)
 				constdeclaration();
 				while (sym == SYM_COMMA) { // ,
 					getsym();
 					constdeclaration();
 				}
-				if (sym == SYM_SEMICOLON) { // ;
+                if (sym == SYM_SEMICOLON) { // ;
 					getsym();
                     break;
 				}
-				else
-				{
-					error(5); // Missing ',' or ';'.
+				else {
+					error(5); 
+                    // Missing ',' or ';'.
 				}
-			}
-			while (sym == SYM_IDENTIFIER);
+			} while (sym == SYM_IDENTIFIER);
 		} // if
-
-		if (sym == SYM_VAR)
-		{ // variable declarations
+		if (sym == SYM_VAR) { 
+            // variable declarations
 			getsym();
 			do {
 				vardeclaration();
@@ -751,42 +733,37 @@ void block(symset fsys)
 					getsym();
 					vardeclaration();
 				}
-				if (sym == SYM_SEMICOLON) { // 表示变量声明结束，应该进行下一步
+				if (sym == SYM_SEMICOLON) { 
+                    // 表示变量声明结束，应该进行下一步
 					getsym(); 
                     break;
 				}
-				else
-				{
+				else {
 					error(5); 
                     // Missing ',' or ';'.
 				}
 			}
 			while (sym == SYM_IDENTIFIER);
-		} // if
-		block_data_alloc_index = data_alloc_index; //save data_alloc_index before handling procedure call!
-		while (sym == SYM_PROCEDURE)
-		{ // procedure declarations
+		}
+		block_data_alloc_index = data_alloc_index; 
+        // save data_alloc_index before handling procedure call!
+		while (sym == SYM_PROCEDURE) { 
+            // procedure declarations
 			getsym();
-			if (sym == SYM_IDENTIFIER)
-			{
+			if (sym == SYM_IDENTIFIER) {
 				enter(ID_PROCEDURE);
 				getsym();
 			}
-			else
-			{
-				error(4); // There must be an identifier to follow 'const', 'var', or 'procedure'.
+			else {
+				error(4); 
+                // There must be an identifier to follow 'const', 'var', or 'procedure'.
 			}
-
-
-			if (sym == SYM_SEMICOLON)
-			{
+			if (sym == SYM_SEMICOLON) {
 				getsym();
 			}
-			else
-			{
+			else {
 				error(5); // Missing ',' or ';'.
 			}
-
 			level++;
 			saved_table_index = table_index;
 			set1 = createset(SYM_SEMICOLON, SYM_NULL);
@@ -796,9 +773,7 @@ void block(symset fsys)
 			destroyset(set);
 			table_index = saved_table_index;
 			level--;
-
-			if (sym == SYM_SEMICOLON)
-			{
+			if (sym == SYM_SEMICOLON) {
 				getsym();
 				set1 = createset(SYM_IDENTIFIER, SYM_PROCEDURE, SYM_NULL);
 				set = uniteset(statbegsys, set1);
@@ -806,20 +781,18 @@ void block(symset fsys)
 				destroyset(set1);
 				destroyset(set);
 			}
-			else
-			{
+			else {
 				error(5); // Missing ',' or ';'.
 			}
 		}
 		data_alloc_index = block_data_alloc_index; 
-        //restore data_alloc_index after handling procedure call!
+        // restore data_alloc_index after handling procedure call!
 		set1 = createset(SYM_IDENTIFIER, SYM_NULL);
 		set = uniteset(statbegsys, set1);
 		test(set, declbegsys, 7);
 		destroyset(set1);
 		destroyset(set);
-	}
-	while (inset(sym, declbegsys));
+	} while (inset(sym, declbegsys));
 
 	code[mk->address].addr = curr_ins;
 	mk->address = curr_ins;
