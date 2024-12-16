@@ -125,10 +125,9 @@ void getch() {
 void getsym(void) {
 	int i, k;
 	char a[MAXIDLEN + 1];
-
-	while (ch == ' '||ch == '\t')
+	while (ch == ' '||ch == '\t'||ch == '\n'||ch == '\r') {
 		getch();
-
+    }
 	if (isalpha(ch)) { 
         // symbol is a reserved word or an identifier.
 		k = 0;
@@ -236,7 +235,8 @@ void getsym(void) {
 	{ // other tokens
 		i = NSYM;
 		csym[0] = ch;
-		while (csym[i--] != ch);
+		while (csym[i--] != ch)
+            ;
 		if (++i)
 		{
 			sym = ssym[i];
@@ -244,7 +244,7 @@ void getsym(void) {
 		}
 		else
 		{
-			printf("Fatal Error: Unknown character.\n");
+			printf("Fatal Error: Unknown character: %d\n", ch);
 			exit(1);
 		}
 	}
@@ -381,19 +381,14 @@ void factor(symset fsys)
 	
 	test(facbegsys, fsys, 24); // The symbol can not be as the beginning of an expression.
 
-	if (inset(sym, facbegsys))
-	{
-		if (sym == SYM_IDENTIFIER)
-		{
-			if ((i = position(id)) == 0)
-			{
+	if (inset(sym, facbegsys)) {
+		if (sym == SYM_IDENTIFIER) {
+			if ((i = position(id)) == 0) {
 				error(11); // Undeclared identifier.
 			}
-			else
-			{
-				switch (table[i].kind)
-				{
-					mask* mk;
+			else {
+                mask* mk;
+				switch (table[i].kind) {
 				case ID_CONSTANT:
 					gen(LIT, 0, table[i].value);
 					break;
@@ -404,7 +399,7 @@ void factor(symset fsys)
 				case ID_PROCEDURE:
 					error(21); // Procedure identifier can not be in an expression.
 					break;
-				} // switch
+				}
 			}
 			getsym();
 		}
@@ -451,7 +446,7 @@ void factor(symset fsys)
 //////////////////////////////////////////////////////////////////////
 void term(symset fsys)
 {
-	int mulop;
+	int mulop; // multiplication operator
 	symset set;
 	
 	set = uniteset(fsys, createset(SYM_TIMES, SYM_SLASH, SYM_NULL));
@@ -476,48 +471,48 @@ void term(symset fsys)
 /**
  * @brief 逻辑表达式
  */
-void expression(symset fsys) {
-    symset set;
-    int logop;
+// void expression(symset fsys) {
+//     symset set;
+//     int logop;
 
-    term(fsys);  // 处理最高优先级项
-    while (sym == SYM_AND || sym == SYM_OR) {
-        logop = sym;
-        getsym();
-        term(fsys);  // 与或操作符后的项
+//     term(fsys);  // 处理最高优先级项
+//     while (sym == SYM_AND || sym == SYM_OR) {
+//         logop = sym;
+//         getsym();
+//         term(fsys);  // 与或操作符后的项
 
-        if (logop == SYM_AND) {
-            gen(OPR, 0, OPR_AND);  // 生成逻辑与代码
-        } else {
-            gen(OPR, 0, OPR_OR);   // 生成逻辑或代码
-        }
-    }
-}
+//         if (logop == SYM_AND) {
+//             gen(OPR, 0, OPR_AND);  // 生成逻辑与代码
+//         } else {
+//             gen(OPR, 0, OPR_OR);   // 生成逻辑或代码
+//         }
+//     }
+// }
 //////////////////////////////////////////////////////////////////////
-// void expression(symset fsys)
-// {
-// 	int addop;
-// 	symset set;
+void expression(symset fsys)
+{
+	int addop;
+	symset set;
 
-// 	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_NULL));
+	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_NULL));
 	
-// 	term(set);
-// 	while (sym == SYM_PLUS || sym == SYM_MINUS)
-// 	{
-// 		addop = sym;
-// 		getsym();
-// 		term(set);
-// 		if (addop == SYM_PLUS)
-// 		{
-// 			gen(OPR, 0, OPR_ADD);
-// 		}
-// 		else
-// 		{
-// 			gen(OPR, 0, OPR_MIN);
-// 		}
-//  } // while
-// 	destroyset(set);
-// } // expression
+	term(set);
+	while (sym == SYM_PLUS || sym == SYM_MINUS)
+	{
+		addop = sym;
+		getsym();
+		term(set);
+		if (addop == SYM_PLUS)
+		{
+			gen(OPR, 0, OPR_ADD);
+		}
+		else
+		{
+			gen(OPR, 0, OPR_MIN);
+		}
+ } // while
+	destroyset(set);
+} // expression
 
 void condition(symset fsys)
 {
@@ -731,14 +726,13 @@ void block(symset fsys)
 			do
 			{
 				constdeclaration();
-				while (sym == SYM_COMMA)
-				{
+				while (sym == SYM_COMMA) { // ,
 					getsym();
 					constdeclaration();
 				}
-				if (sym == SYM_SEMICOLON)
-				{
+				if (sym == SYM_SEMICOLON) { // ;
 					getsym();
+                    break;
 				}
 				else
 				{
@@ -751,21 +745,20 @@ void block(symset fsys)
 		if (sym == SYM_VAR)
 		{ // variable declarations
 			getsym();
-			do
-			{
+			do {
 				vardeclaration();
-				while (sym == SYM_COMMA)
-				{
+				while (sym == SYM_COMMA) {
 					getsym();
 					vardeclaration();
 				}
-				if (sym == SYM_SEMICOLON)
-				{
-					getsym();
+				if (sym == SYM_SEMICOLON) { // 表示变量声明结束，应该进行下一步
+					getsym(); 
+                    break;
 				}
 				else
 				{
-					error(5); // Missing ',' or ';'.
+					error(5); 
+                    // Missing ',' or ';'.
 				}
 			}
 			while (sym == SYM_IDENTIFIER);
@@ -817,8 +810,9 @@ void block(symset fsys)
 			{
 				error(5); // Missing ',' or ';'.
 			}
-		} // while
-		data_alloc_index = block_data_alloc_index; //restore data_alloc_index after handling procedure call!
+		}
+		data_alloc_index = block_data_alloc_index; 
+        //restore data_alloc_index after handling procedure call!
 		set1 = createset(SYM_IDENTIFIER, SYM_NULL);
 		set = uniteset(statbegsys, set1);
 		test(set, declbegsys, 7);

@@ -97,12 +97,12 @@ extern char id[MAXIDLEN+1]; // last identifier read
 extern int  num;        // last number read
 extern int  char_cnt;         // character count
 extern int  line_length;         // line length
-extern int  kk;
+extern int  id_index;                // index of identifier in table
 extern int  err;
 extern int  curr_ins;         // index of current instruction to be generated.
 extern int  level;
-extern int  tx;
-extern int  dx;  // data allocation index
+extern int  table_index; // table index
+extern int  data_alloc_index;  // data allocation index
 
 extern char line[80];
 
