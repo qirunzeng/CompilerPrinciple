@@ -1,7 +1,8 @@
 var i,j,k, l, m;
 begin
   i := -1;
-  k := i+1;
-  j := i&&0;
-  l := i || 0;
+  j := !i;
+  l := !(i&&j);
+  k := (i+j)&&l;
+  m := (j&&l) + 2;
 end.
