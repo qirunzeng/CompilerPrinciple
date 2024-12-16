@@ -9,7 +9,7 @@
 #include "set.h"
 
 #define NRW        11     // number of reserved words
-#define TXMAX      500    // length of identifier table
+#define TABLE_INDEX_MAX      500    // length of identifier table
 #define MAXNUMLEN  14     // maximum number of digits in numbers
 #define NSYM       13     // maximum number of symbols in array ssym and csym
 #define MAXIDLEN   10     // length of identifiers
@@ -132,7 +132,7 @@ typedef struct
 	int  value;
 } comtab;
 
-extern comtab table[TXMAX];
+extern comtab table[TABLE_INDEX_MAX];    // symbol table
 
 /**
  * 符号集

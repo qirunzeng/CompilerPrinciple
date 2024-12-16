@@ -47,49 +47,51 @@ char id[MAXIDLEN + 1]; // last identifier read
 int  num;        // last number read
 int  char_cnt;         // character count
 int  line_length;         // line length
-int  kk;
+int  id_index;                // index of identifier in table
 int  err;
 int  curr_ins;         // index of current instruction to be generated.
 int  level;
-int  tx;
-int dx;  // data allocation index
+int  table_index; // table index
+int  data_alloc_index;  // data allocation index
 char line[80];
 instruction code[CXMAX];
 
-const char *word[NRW+1] =
-{
+const char *word[NRW+1] = {
 	"", /* place holder */
 	"begin", "call", "const", "do", "end","if",
 	"odd", "procedure", "then", "var", "while"
 };
 
-const int wsym[NRW+1] =
-{
+const int wsym[NRW+1] = {
 	SYM_NULL, SYM_BEGIN, SYM_CALL, SYM_CONST, SYM_DO, SYM_END,
 	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE
 };
 
-const int ssym[NSYM+1] =
-{
+const int ssym[NSYM+1] = {
 	SYM_NULL, SYM_PLUS, SYM_MINUS, SYM_TIMES, SYM_SLASH,
 	SYM_LPAREN, SYM_RPAREN, SYM_EQU, SYM_COMMA, SYM_PERIOD, SYM_SEMICOLON, SYM_AND, SYM_OR, SYM_NOT
 };
 
-char csym[NSYM+1] =
-{
+char csym[NSYM+1] = {
 	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'
 };
 
-const char* mnemonic[MAXINS] =
-{
-	"LIT", "OPR", "LOD", "STO", "CAL", "INT", "JMP", "JPC"
+const char* mnemonic[MAXINS] = { // 指令助记符
+	"LIT", // Load constant value to stack top
+    "OPR", // Arithmetic operation
+    "LOD", // Load value to stack top from stack
+    "STO", // Store value to stack top from stack
+    "CAL", // Call procedure
+    "INT", // Increment t-register
+    "JMP", // Jump
+    "JPC"  // Jump conditional
 };
 
-comtab table[TXMAX];
+comtab table[TABLE_INDEX_MAX];    // symbol table
 FILE* infile;
 
 // print error message.
-void error(int n) {
+void error(const int n) {
 	int i;
 	printf("      ");
 	for (i = 1; i+1 <= char_cnt; i++) {
@@ -100,7 +102,7 @@ void error(int n) {
 	err++;
 } // error
 
-void getch(void) {
+void getch() {
     // 读取一个字符，并存入 ch 中
 	if (char_cnt == line_length) {
 		if (feof(infile)) {
@@ -279,26 +281,24 @@ void test(symset s1, symset s2, int n)
 // enter object(constant, variable or procedre) into table.
 void enter(int kind) {
 	mask* mk;
-	tx++;
-	strcpy(table[tx].name, id);
-	table[tx].kind = kind;
-	switch (kind)
-	{
+	table_index++;
+	strcpy(table[table_index].name, id);
+	table[table_index].kind = kind;
+	switch (kind) {
 	case ID_CONSTANT:
-		if (num > MAXADDRESS)
-		{
+		if (num > MAXADDRESS) {
 			error(25); // The number is too great.
 			num = 0;
 		}
-		table[tx].value = num;
+		table[table_index].value = num;
 		break;
 	case ID_VARIABLE:
-		mk = (mask*) &table[tx];
+		mk = (mask*) &table[table_index];
 		mk->level = level;
-		mk->address = dx++;
+		mk->address = data_alloc_index++;
 		break;
 	case ID_PROCEDURE:
-		mk = (mask*) &table[tx];
+		mk = (mask*) &table[table_index];
 		mk->level = level;
 		break;
 	} // switch
@@ -309,7 +309,7 @@ int position(char* id)
 {
 	int i;
 	strcpy(table[0].name, id);
-	i = tx + 1;
+	i = table_index + 1;
 	while (strcmp(table[--i].name, id) != 0);
 	return i;
 } // position
@@ -519,7 +519,6 @@ void expression(symset fsys) {
 // 	destroyset(set);
 // } // expression
 
-//////////////////////////////////////////////////////////////////////
 void condition(symset fsys)
 {
 	int relop;
@@ -711,13 +710,13 @@ void block(symset fsys)
 {
 	int cx0; // initial code index
 	mask* mk;
-	int block_dx;
-	int savedTx;
+	int block_data_alloc_index;
+	int saved_table_index;
 	symset set1, set;
 
-	dx = 3;
-	block_dx = dx;
-	mk = (mask*) &table[tx];
+	data_alloc_index = 3;
+	block_data_alloc_index = data_alloc_index;
+	mk = (mask*) &table[table_index];
 	mk->address = curr_ins;
 	gen(JMP, 0, 0);
 	if (level > MAXLEVEL)
@@ -771,7 +770,7 @@ void block(symset fsys)
 			}
 			while (sym == SYM_IDENTIFIER);
 		} // if
-		block_dx = dx; //save dx before handling procedure call!
+		block_data_alloc_index = data_alloc_index; //save data_alloc_index before handling procedure call!
 		while (sym == SYM_PROCEDURE)
 		{ // procedure declarations
 			getsym();
@@ -796,13 +795,13 @@ void block(symset fsys)
 			}
 
 			level++;
-			savedTx = tx;
+			saved_table_index = table_index;
 			set1 = createset(SYM_SEMICOLON, SYM_NULL);
 			set = uniteset(set1, fsys);
 			block(set);
 			destroyset(set1);
 			destroyset(set);
-			tx = savedTx;
+			table_index = saved_table_index;
 			level--;
 
 			if (sym == SYM_SEMICOLON)
@@ -819,7 +818,7 @@ void block(symset fsys)
 				error(5); // Missing ',' or ';'.
 			}
 		} // while
-		dx = block_dx; //restore dx after handling procedure call!
+		data_alloc_index = block_data_alloc_index; //restore data_alloc_index after handling procedure call!
 		set1 = createset(SYM_IDENTIFIER, SYM_NULL);
 		set = uniteset(statbegsys, set1);
 		test(set, declbegsys, 7);
@@ -831,7 +830,7 @@ void block(symset fsys)
 	code[mk->address].addr = curr_ins;
 	mk->address = curr_ins;
 	cx0 = curr_ins;
-	gen(INT, 0, block_dx);
+	gen(INT, 0, block_data_alloc_index);
 	set1 = createset(SYM_SEMICOLON, SYM_END, SYM_NULL);
 	set = uniteset(set1, fsys);
 	statement(set);
