@@ -1,13 +1,6 @@
 # PL0
 
-使用：
-```bash
-mkdir build
-cd build
-cmake ..
-make
-./pl0_compiler
-```
+使用: 自动化脚本 `sh start.sh`
 
 ## 算法流程
 

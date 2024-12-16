@@ -6,8 +6,8 @@ int main () {
 	int i;
 	symset set, set1, set2;
 
-	// printf("Please input source file name: "); // get file name to be compiled
-	// scanf("%s", s);
+	printf("Please input source file name: "); // get file name to be compiled
+	scanf("%s", s);
 	if ((infile = fopen(s, "r")) == NULL)
 	{
 		printf("File %s can't be opened.\n", s);
