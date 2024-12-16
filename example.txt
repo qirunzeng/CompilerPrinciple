@@ -1,6 +1,7 @@
-var i,j,k;
+var i,j,k, l, m;
 begin
   i := -1;
   k := i+1;
   j := i&&0;
+  l := i || 0;
 end.

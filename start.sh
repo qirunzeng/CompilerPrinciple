@@ -15,12 +15,12 @@ echo "../example.txt" | ./pl0_compiler
 echo "Done"
 echo "\n-------------------------\n\n"
 
-echo "../example2.txt" | ./pl0_compiler
+# echo "../example2.txt" | ./pl0_compiler
 
-echo "Done"
-echo "\n-------------------------\n\n"
+# echo "Done"
+# echo "\n-------------------------\n\n"
 
-echo "../example3.txt" | ./pl0_compiler
+# echo "../example3.txt" | ./pl0_compiler
 
-echo "Done"
-echo "\n-------------------------\n\n"
+# echo "Done"
+# echo "\n-------------------------\n\n"
