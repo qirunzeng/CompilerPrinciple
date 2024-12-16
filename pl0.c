@@ -1,6 +1,6 @@
 // pl0 compiler source code
 
-#pragma warning(disable:4996)
+// #pragma warning(disable:4996)
 
 #include "pl0.h"
 
@@ -127,11 +127,10 @@ void getsym(void) {
 	while (ch == ' '||ch == '\t')
 		getch();
 
-	if (isalpha(ch))
-	{ // symbol is a reserved word or an identifier.
+	if (isalpha(ch)) { 
+        // symbol is a reserved word or an identifier.
 		k = 0;
-		do
-		{
+		do {
 			if (k < MAXIDLEN)
 				a[k++] = ch;
 			getch();
@@ -141,14 +140,17 @@ void getsym(void) {
 		strcpy(id, a);
 		word[0] = id;
 		i = NRW;
-		while (strcmp(id, word[i--]));
-		if (++i)
+		while (strcmp(id, word[i--]))
+            ; // 不相等
+		if (++i) {
 			sym = wsym[i]; // symbol is a reserved word
-		else
+        }
+        else {
 			sym = SYM_IDENTIFIER;   // symbol is an identifier
+        }
 	}
-	else if (isdigit(ch))
-	{ // symbol is a number.
+	else if (isdigit(ch)) { 
+        // symbol is a number.
 		k = num = 0;
 		sym = SYM_NUMBER;
 		do {
@@ -210,7 +212,7 @@ void getsym(void) {
             sym = SYM_AND;
             getch();
         } else {
-            sym = SYM_NULL;    // illegal?
+            sym = SYM_NULL;    // & 但未实现
         }
         // TODO
     }
@@ -219,17 +221,13 @@ void getsym(void) {
         if (ch == '|') {
             sym = SYM_OR;
             getch();
+        } else {
+            sym = SYM_NULL;    // | 但未实现
         }
         // TODO
     }
     else if (ch == '!') {
-        getch();
-        if (ch == '=') {
-            sym = SYM_NEQ;
-            getch();
-        } else {
-            sym = SYM_NOT;
-        }
+        sym = SYM_NOT;
         // TODO
     }
 	else
@@ -259,7 +257,8 @@ void gen(int x, int y, int z)
 	}
 	code[curr_ins].func_code = x;
 	code[curr_ins].level = y;
-	code[curr_ins++].addr = z;
+	code[curr_ins].addr = z;
+    curr_ins++; // 下一条指令
 } // gen
 
 // tests if error occurs and skips all symbols that do not belongs to s1 or s2.
@@ -474,6 +473,9 @@ void term(symset fsys)
 	destroyset(set);
 } // term
 
+/**
+ * @brief 逻辑表达式
+ */
 void expression(symset fsys) {
     symset set;
     int logop;
