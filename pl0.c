@@ -122,46 +122,95 @@ void getch() {
 } // getch
 
 // gets a symbol from input stream.
-void getsym(void) {
+void getsym(void)
+{
 	int i, k;
 	char a[MAXIDLEN + 1];
-	while (ch == ' '||ch == '\t'||ch == '\n'||ch == '\r') {
+
+	while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+	{
 		getch();
-    }
-	if (isalpha(ch)) { 
-        // symbol is a reserved word or an identifier.
+	}
+	while (ch == '/')
+	{
+		getch();
+		if (ch == '/')
+		{
+			while (ch != '\n')
+			{
+				getch();
+			}
+			getch();
+		}
+		else if (ch == '*')
+		{
+			getch();
+			while (ch != '*')
+			{
+				while (ch == '/')
+				{
+					getch();
+					if (ch == '*')
+					{
+						error(33);
+					}
+				}
+				getch();
+				if (ch == '*')
+				{
+					getch();
+					if (ch == '/')
+					{
+						getch();
+						break;
+					}
+					else
+						continue;
+				}
+			}
+		}
+		while (ch == ' ' || ch == '\t' || ch == '\n')
+		{
+			getch();
+		}
+		if (ch == '*')
+		{
+			error(33);
+		}
+	}
+
+	if (isalpha(ch))
+	{ // symbol is a reserved word or an identifier.
 		k = 0;
-		do {
+		do
+		{
 			if (k < MAXIDLEN)
 				a[k++] = ch;
 			getch();
-		}
-		while (isalpha(ch) || isdigit(ch));
+		} while (isalpha(ch) || isdigit(ch));
 		a[k] = 0;
 		strcpy(id, a);
 		word[0] = id;
 		i = NRW;
 		while (strcmp(id, word[i--]))
-            ; // 不相等
-		if (++i) {
+			;
+		if (++i)
 			sym = wsym[i]; // symbol is a reserved word
-        }
-        else {
-			sym = SYM_IDENTIFIER;   // symbol is an identifier
-        }
+		else
+			sym = SYM_IDENTIFIER; // symbol is an identifier
 	}
-	else if (isdigit(ch)) { 
-        // symbol is a number.
+	else if (isdigit(ch))
+	{ // symbol is a number.
 		k = num = 0;
 		sym = SYM_NUMBER;
-		do {
+		do
+		{
 			num = num * 10 + ch - '0';
 			k++;
 			getch();
 		} while (isdigit(ch));
-		if (k > MAXNUMLEN) {
-			error(25);     // The number is too large.
-        }
+		if (k > MAXNUMLEN)
+			error(25); // The number is too great.
 	}
 	else if (ch == ':')
 	{
@@ -173,7 +222,7 @@ void getsym(void) {
 		}
 		else
 		{
-			sym = SYM_NULL;       // illegal?
+			sym = SYM_NULL; // illegal?
 		}
 	}
 	else if (ch == '>')
@@ -181,12 +230,12 @@ void getsym(void) {
 		getch();
 		if (ch == '=')
 		{
-			sym = SYM_GEQ;     // >=
+			sym = SYM_GEQ; // >=
 			getch();
 		}
 		else
 		{
-			sym = SYM_GTR;     // >
+			sym = SYM_GTR; // >
 		}
 	}
 	else if (ch == '<')
@@ -194,49 +243,62 @@ void getsym(void) {
 		getch();
 		if (ch == '=')
 		{
-			sym = SYM_LEQ;     // <=
+			sym = SYM_LEQ; // <=
 			getch();
 		}
 		else if (ch == '>')
 		{
-			sym = SYM_NEQ;     // <>
+			sym = SYM_NEQ; // <>
 			getch();
 		}
 		else
 		{
-			sym = SYM_LES;     // <
+			sym = SYM_LES; // <
 		}
 	}
-    else if (ch == '&') {
-        getch();
-        if (ch == '&') {
-            sym = SYM_AND;
-            getch();
-        } else {
-            sym = SYM_NULL;    // & 但未实现
-        }
-        // TODO
-    }
-    else if (ch == '|') {
-        getch();
-        if (ch == '|') {
-            sym = SYM_OR;
-            getch();
-        } else {
-            sym = SYM_NULL;    // | 但未实现
-        }
-        // TODO
-    }
-    else if (ch == '!') {
-        sym = SYM_NOT;
-        // TODO
-    }
+	else if (ch == '&')
+	{
+		getch();
+		if (ch == '&')
+		{
+			sym = SYM_AND;
+			getch();
+		}
+		else
+		{
+			sym = SYM_NULL; // illegal?
+		}
+		// TODO
+	}
+	else if (ch == '|')
+	{
+		getch();
+		if (ch == '|')
+		{
+			sym = SYM_OR;
+			getch();
+		}
+		// TODO
+	}
+	else if (ch == '!')
+	{
+		getch();
+		if (ch == '=')
+		{
+			sym = SYM_NEQ;
+			getch();
+		}
+		else
+		{
+			sym = SYM_NOT;
+		}
+	}
 	else
 	{ // other tokens
 		i = NSYM;
 		csym[0] = ch;
 		while (csym[i--] != ch)
-            ;
+			;
 		if (++i)
 		{
 			sym = ssym[i];
@@ -244,12 +306,11 @@ void getsym(void) {
 		}
 		else
 		{
-			printf("Fatal Error: Unknown character: %d\n", ch);
+			printf("Fatal Error: Unknown character.\n");
 			exit(1);
 		}
 	}
 } // getsym
-
 // generates (assembles) an instruction.
 void gen(int x, int y, int z)
 {
@@ -375,47 +436,59 @@ void listcode(int from, int to)
 /**
  * @brief 处理因子
  */
-void factor(symset fsys) {
+void factor(symset fsys)
+{
 	void expression(symset fsys);
 	int i;
 	symset set;
+
 	test(facbegsys, fsys, 24); // The symbol can not be as the beginning of an expression.
-	if (inset(sym, facbegsys)) {
-		if (sym == SYM_IDENTIFIER) {
-			if ((i = position(id)) == 0) {
+
+	if (inset(sym, facbegsys))
+	{
+		if (sym == SYM_IDENTIFIER)
+		{
+			if ((i = position(id)) == 0)
+			{
 				error(11); // Undeclared identifier.
 			}
-			else {
-                mask* mk;
-				switch (table[i].kind) {
+			else
+			{
+				switch (table[i].kind)
+				{
+					mask *mk;
 				case ID_CONSTANT:
 					gen(LIT, 0, table[i].value);
 					break;
 				case ID_VARIABLE:
-					mk = (mask*) &table[i];
+					mk = (mask *)&table[i];
 					gen(LOD, level - mk->level, mk->address);
 					break;
 				case ID_PROCEDURE:
 					error(21); // Procedure identifier can not be in an expression.
 					break;
-				}
+				} // switch
 			}
 			getsym();
 		}
-		else if (sym == SYM_NUMBER) { // number
-			if (num > MAXADDRESS) {
+		else if (sym == SYM_NUMBER)
+		{
+			if (num > MAXADDRESS)
+			{
 				error(25); // The number is too great.
 				num = 0;
 			}
 			gen(LIT, 0, num);
 			getsym();
 		}
-		else if (sym == SYM_LPAREN) { // '('
+		else if (sym == SYM_LPAREN)
+		{
 			getsym();
 			set = uniteset(createset(SYM_RPAREN, SYM_NULL), fsys);
 			expression(set);
 			destroyset(set);
-			if (sym == SYM_RPAREN) {
+			if (sym == SYM_RPAREN)
+			{
 				getsym();
 			}
 			else
@@ -423,30 +496,30 @@ void factor(symset fsys) {
 				error(22); // Missing ')'.
 			}
 		}
-		else if(sym == SYM_MINUS) // UMINUS,  Expr -> '-' Expr
-		{  
-			 getsym();
-			 factor(fsys);
-			 gen(OPR, 0, OPR_NEG);
+		else if (sym == SYM_MINUS) // UMINUS,  Expr -> '-' Expr
+		{
+			getsym();
+			factor(fsys);
+			gen(OPR, 0, OPR_NEG);
 		}
-        else if (sym == SYM_NOT) { // ! NOT, Expr -> '!' Expr
-            getsym();
-            factor(fsys);
-            gen(OPR, 0, OPR_NOT);
-        }
+		else if (sym == SYM_NOT) // UMINUS,  Expr -> '-' Expr
+		{
+			getsym();
+			factor(fsys);
+			gen(OPR, 0, OPR_NOT);
+		}
 		test(fsys, createset(SYM_LPAREN, SYM_NULL), 23);
 	} // if
 } // factor
-
 //////////////////////////////////////////////////////////////////////
 void term(symset fsys)
 {
 	int mulop; // multiplication operator
 	symset set;
 	
-	set = uniteset(fsys, createset(SYM_TIMES, SYM_SLASH, SYM_NULL));
+	set = uniteset(fsys, createset(SYM_TIMES, SYM_SLASH,SYM_AND, SYM_NULL));
 	factor(set);
-	while (sym == SYM_TIMES || sym == SYM_SLASH)
+	while (sym == SYM_TIMES || sym == SYM_SLASH||sym==SYM_AND)
 	{
 		mulop = sym;
 		getsym();
@@ -454,6 +527,10 @@ void term(symset fsys)
 		if (mulop == SYM_TIMES)
 		{
 			gen(OPR, 0, OPR_MUL);
+		}
+		else if (mulop == SYM_AND)
+		{
+			gen(OPR, 0, OPR_AND);
 		}
 		else
 		{
@@ -468,15 +545,36 @@ void expression(symset fsys) {
 	int addop;
 	symset set;
 
-	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_NULL));
+	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_OR, SYM_NULL));
 	
 	term(set);
-	while (sym == SYM_PLUS || sym == SYM_MINUS) {
+	while (sym == SYM_PLUS || sym == SYM_MINUS||sym==SYM_OR||sym == SYM_EQU || sym == SYM_NEQ||sym == SYM_GEQ||sym == SYM_GTR||sym == SYM_LES||sym == SYM_LEQ) {
 		addop = sym;
 		getsym();
 		term(set);
 		if (addop == SYM_PLUS) {
 			gen(OPR, 0, OPR_ADD);
+		}
+		else if(addop == SYM_OR){
+			gen(OPR, 0, OPR_OR);
+		}
+		else if(addop == SYM_EQU){
+			gen(OPR, 0, OPR_EQU);
+		}
+		else if(addop == SYM_NEQ){
+			gen(OPR, 0, OPR_NEQ);
+		}
+		else if(addop == SYM_GEQ){
+			gen(OPR, 0, OPR_GEQ);
+		}
+		else if(addop == SYM_GTR){
+			gen(OPR, 0, OPR_GTR);
+		}
+		else if(addop == SYM_LES){
+			gen(OPR, 0, OPR_LES);
+		}
+		else if(addop == SYM_LEQ){
+			gen(OPR, 0, OPR_LEQ);
 		}
 		else {
 			gen(OPR, 0, OPR_MIN);
@@ -485,68 +583,24 @@ void expression(symset fsys) {
 	destroyset(set);
 } // expression
 
-/**
- * @brief 逻辑表达式
- */
-void logic_expression(symset fsys) {
-    int logop;
-    symset set;
-
-    expression(fsys); // 项
-    while (sym == SYM_AND || sym == SYM_OR) {
-        logop = sym;
-        getsym();
-        expression(fsys);
-        if (logop == SYM_AND) {
-            gen(OPR, 0, OPR_AND);  // 生成逻辑与代码
-        } else {
-            gen(OPR, 0, OPR_OR);   // 生成逻辑或代码
-        }
-    }
-}
-
-void condition(symset fsys) {
-	int relop;
+void condition(symset fsys)
+{
 	symset set;
 
-	if (sym == SYM_ODD) {
+	if (sym == SYM_ODD)
+	{
 		getsym();
-		logic_expression(fsys);
+		expression(fsys);
 		gen(OPR, 0, 6);
-	} else {
-		set = uniteset(relset, fsys);
-		logic_expression(set);
+	}
+	else
+	{
+		set = uniteset(createset(SYM_NULL), fsys);
+		expression(set);
 		destroyset(set);
-		if (! inset(sym, relset)) {
-			error(20);
-		}
-		else {
-			relop = sym;
-			getsym();
-			logic_expression(fsys);
-			switch (relop) {
-			case SYM_EQU:
-				gen(OPR, 0, OPR_EQU);
-				break;
-			case SYM_NEQ:
-				gen(OPR, 0, OPR_NEQ);
-				break;
-			case SYM_LES:
-				gen(OPR, 0, OPR_LES);
-				break;
-			case SYM_GEQ:
-				gen(OPR, 0, OPR_GEQ);
-				break;
-			case SYM_GTR:
-				gen(OPR, 0, OPR_GTR);
-				break;
-			case SYM_LEQ:
-				gen(OPR, 0, OPR_LEQ);
-				break;
-			} // switch
-		} // else
 	} // else
 } // condition
+
 
 //////////////////////////////////////////////////////////////////////
 void statement(symset fsys)
@@ -575,7 +629,7 @@ void statement(symset fsys)
 		{
 			error(13); // ':=' expected.
 		}
-		logic_expression(fsys);
+		expression(fsys);
 		mk = (mask*) &table[i];
 		if (i)
 		{
@@ -903,16 +957,40 @@ void interpret()
 				stack[top] = stack[top] <= stack[top + 1];
 				break;
             case OPR_AND: // ! AND
-                top--;
-                stack[top] = stack[top] && stack[top + 1];
-                break;
-            case OPR_OR:  // ! OR
-                top--;
-                stack[top] = stack[top] || stack[top + 1];
-                break;
-            case OPR_NOT: // ! NOT
-                stack[top] = !stack[top];
-                break;
+				top--;
+				if (stack[top])
+				{
+					if (stack[top + 1])
+					{
+						stack[top] = 1;
+					}
+					else{
+					stack[top] = 0;
+				    }
+				}
+				else{
+					stack[top] = 0;
+				}
+				break;
+			case OPR_OR: // ! OR
+				top--;
+				if(stack[top]){
+					stack[top]=1;
+				}
+				else if(stack[top+1]){
+					stack[top]=1;
+				}
+				else{
+					stack[top]=0;
+				}
+
+				break;
+			case OPR_NOT: // ! NOT
+			    if(stack[top])
+				stack[top] = 0;
+				else
+				stack[top] = 1;
+				break;
 			} // switch
 			break;
 		case LOD:
