@@ -6,7 +6,7 @@ int main()
 	char s[80];
 	int i;
 	symset set, set1, set2;
-
+	arraylist = createlist();
 	printf("Please input source file name: "); // get file name to be compiled
 	scanf("%s", s);
 	if ((infile = fopen(s, "r")) == NULL)
@@ -20,9 +20,9 @@ int main()
 	// create begin symbol sets
 	declbegsys = createset(SYM_CONST, SYM_VAR, SYM_PROCEDURE, SYM_NULL);
 	statbegsys = createset(SYM_BEGIN, SYM_CALL, SYM_IF, SYM_WHILE, SYM_NULL);
-	facbegsys = createset(SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_NOT,SYM_NULL);
+	facbegsys = createset(SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_NOT, SYM_ARRAY, SYM_NULL);
 
-	err = char_cnt = curr_ins = line_length = 0;// initialize global variables
+	err = char_cnt = curr_ins = line_length = 0; // initialize global variables
 	ch = ' ';
 	id_index = MAXIDLEN;
 
@@ -49,7 +49,7 @@ int main()
 			fwrite(&code[i], sizeof(instruction), 1, hbin);
 		fclose(hbin);
 	}
-	if (err == 0)
+	if (err <= 100)
 		interpret();
 	else
 		printf("There are %d error(s) in PL/0 program.\n", err);

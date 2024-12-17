@@ -13,7 +13,8 @@
 #define MAXNUMLEN  14     // maximum number of digits in numbers
 #define NSYM       13     // maximum number of symbols in array ssym and csym
 #define MAXIDLEN   10     // length of identifiers
-
+#define MAXARRAYLEN 3	 // 数组一个维度的最大长度，3代表999
+#define MAXARRAYDIM 3	 // 最大数组维度，现在为3
 #define MAXADDRESS 32767  // maximum address
 #define MAXLEVEL   32     // maximum depth of nesting block
 #define CXMAX      500    // size of code array
@@ -27,6 +28,7 @@
  */
 enum symtype {
 	SYM_NULL,       // 
+	SYM_ARRAY,
 	SYM_IDENTIFIER, // 标识符
 	SYM_NUMBER,     // 数字
 	SYM_PLUS,       // +
@@ -63,7 +65,7 @@ enum symtype {
 
 enum idtype
 {
-	ID_CONSTANT, ID_VARIABLE, ID_PROCEDURE
+	ID_CONSTANT, ID_VARIABLE, ID_PROCEDURE,ID_ARRAY
 };
 
 enum opcode
@@ -103,9 +105,16 @@ extern int  curr_ins;         // index of current instruction to be generated.
 extern int  level;
 extern int  table_index; // table index
 extern int  data_alloc_index;  // data allocation index
-
+typedef struct Array
+{
+	char id[MAXIDLEN];
+	int dim;
+	int dim_number[MAXARRAYDIM];
+	struct Array *next;
+} Array;
 extern char line[80];
-
+extern int length ;		   // 用于存数组长度
+extern Array*arraylist;
 extern instruction code[CXMAX];
 
 /**
@@ -143,10 +152,13 @@ typedef struct {
 	short level;
 	short address;
 } mask;
-
 extern FILE* infile;
 
-
+Array *createlist(void);
+Array *findtail(Array *head);
+int compare(char *a, char *b);
+int searcharray(Array *head, char *id);
+Array *findarray(Array *head, char *id);
 void error(int);
 void getch();
 void getsym();

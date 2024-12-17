@@ -38,9 +38,11 @@ const char* err_msg[] = {
 /* 30 */    "",
 /* 31 */    "",
 /* 32 */    "There are too many levels."
+ /* 34 */ "Big ARRAY ERROR"
 };
 
-
+int length ;		   // 用于存数组长度
+Array *arraylist;
 char ch;         // last character read
 int  sym;        // last symbol read
 char id[MAXIDLEN + 1]; // last identifier read
@@ -89,7 +91,79 @@ const char* mnemonic[MAXINS] = { // 指令助记符
 
 comtab table[TABLE_INDEX_MAX];    // symbol table
 FILE* infile;
+//List相关操作用于实现数组
+Array *createlist(void)
+{
+	// 使用 malloc 分配内存来创建链表节点
+	Array *head = (Array *)malloc(sizeof(Array));
 
+	if (head == NULL)
+	{
+		printf("Memory allocation failed!\n");
+		return NULL;
+	}
+
+	// 初始化结构体的各个成员
+	head->id[0] = '\0'; // 字符串 id 初始化为空字符串
+	head->dim = 0;		// 数组维度初始化为 0
+	for (int i = 0; i < MAXARRAYDIM; i++)
+	{
+		head->dim_number[i] = 0; // 每个维度的大小初始化为 0
+	}
+	head->next = NULL; // 链表中的下一个节点初始化为 NULL
+
+	return head;
+}
+Array *findtail(Array *head)
+{
+	Array *p = head;
+	while (p->next != NULL)
+	{
+		p = p->next;
+	}
+	return p;
+}
+int compare(char *a, char *b)
+{
+	int i = 0;
+	while (*(a + i) != 0)
+	{
+		if (*(a + i) != *(b + i))
+		{
+			return 0;
+		}
+		i++;
+	}
+	if (*(b + i) != 0)
+		return 0;
+	return 1;
+}
+int searcharray(Array *head, char *id)
+{
+	Array *p = head;
+	while (p != NULL)
+	{
+		if (!strcmp(p->id, id))
+		{
+			return 1;
+		}
+		p = p->next;
+	}
+	return 0;
+}
+Array *findarray(Array *head, char *id)
+{
+	Array *p = head;
+	while (p->next != NULL)
+	{
+		if (strcmp(p->id, id) == 0)
+		{
+			break;
+		}
+		p = p->next;
+	}
+	return p;
+}
 // print error message.
 void error(const int n) {
 	int i;
@@ -126,8 +200,7 @@ void getsym(void)
 {
 	int i, k;
 	char a[MAXIDLEN + 1];
-
-	while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+	while (ch == ' ' || ch == '\t' || ch == '\n'|| ch == '\r')
 	{
 		getch();
 	}
@@ -181,6 +254,7 @@ void getsym(void)
 
 	if (isalpha(ch))
 	{ // symbol is a reserved word or an identifier.
+	    length = 0;	 // 清零上次的数组长度
 		k = 0;
 		do
 		{
@@ -197,7 +271,76 @@ void getsym(void)
 		if (++i)
 			sym = wsym[i]; // symbol is a reserved word
 		else
-			sym = SYM_IDENTIFIER; // symbol is an identifier
+		{
+			length = 0;	 // 清零上次的数组长度
+			int dim = 0; // 用于记录当前是第几个维度，最前面为第一维度
+			int dim_number[MAXARRAYDIM];
+			if (ch == '[')
+			{
+				while (ch == '[')
+				{
+					getch();
+					char len[MAXARRAYLEN];
+					for (int i = 0; i < MAXARRAYLEN; i++)
+					{
+						len[i] = '\0';
+					}
+					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变量
+					while (ch != ']')
+					{
+						if (help_cacu_len <= MAXARRAYLEN)
+						{
+							len[help_cacu_len] = ch;
+						}
+						else
+							error(34);
+						help_cacu_len++;
+						getch();
+					}
+					dim_number[dim] = atoi(len);
+					dim++;
+					getch();
+				}
+				if (!searcharray(arraylist, id))
+				{
+					Array *newnode;
+					newnode = (Array *)malloc(sizeof(Array));
+					strcpy(newnode->id, id);
+					newnode->next = NULL;
+					newnode->dim = dim;
+					for (int i = 0; i < dim; i++)
+					{
+						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化为 0
+					}
+					Array*p=findtail(arraylist);
+					p->next = newnode;
+					int multiple = 1; // 计算乘积
+					for (int num = 0; num < dim; num++)
+					{
+						multiple = multiple * dim_number[num];
+					}
+					length = multiple;
+				}
+				else
+				{
+					Array *current_array;
+					current_array = findarray(arraylist, id);
+					int current_dim = current_array->dim;
+					for (int i = 0; i < dim; i++)
+					{
+						int multiple = dim_number[i];
+						for (int j = i + 1; j < dim; j++)
+						{
+							multiple = multiple * (current_array->dim_number[j]);
+						}
+						length = length + multiple;
+					}
+				}
+				sym = SYM_ARRAY;
+			}
+			else
+				sym = SYM_IDENTIFIER;
+		} // symbol is an identifier
 	}
 	else if (isdigit(ch))
 	{ // symbol is a number.
@@ -340,30 +483,48 @@ void test(symset s1, symset s2, int n)
 
 
 // enter object(constant, variable or procedre) into table.
-void enter(int kind) {
-	mask* mk;
+void enter(int kind)
+{
+	mask *mk;
+
 	table_index++;
 	strcpy(table[table_index].name, id);
 	table[table_index].kind = kind;
-	switch (kind) {
-	case ID_CONSTANT:
-		if (num > MAXADDRESS) {
-			error(25); // The number is too great.
-			num = 0;
+	if (length == 0)
+	{
+		switch (kind)
+		{
+		case ID_CONSTANT:
+			if (num > MAXADDRESS)
+			{
+				error(25); // The number is too great.
+				num = 0;
+			}
+			table[table_index].value = num;
+			break;
+		case ID_VARIABLE:
+			mk = (mask *)&table[table_index];
+			mk->level = level;
+			mk->address = data_alloc_index++;
+			break;
+		case ID_PROCEDURE:
+			mk = (mask *)&table[table_index];
+			mk->level = level;
+			break;
+		} // switch
+	}
+	else
+	{
+		if (kind == ID_ARRAY)
+		{
+			mk = (mask *)&table[table_index];
+			mk->level = level;
+			mk->address = data_alloc_index;
+			data_alloc_index = data_alloc_index + length;
 		}
-		table[table_index].value = num;
-		break;
-	case ID_VARIABLE:
-		mk = (mask*) &table[table_index];
-		mk->level = level;
-		mk->address = data_alloc_index++;
-		break;
-	case ID_PROCEDURE:
-		mk = (mask*) &table[table_index];
-		mk->level = level;
-		break;
-	} // switch
+	}
 } // enter
+
 
 // locates identifier in symbol table.
 int position(char* id)
@@ -411,6 +572,11 @@ void vardeclaration(void)
 	if (sym == SYM_IDENTIFIER)
 	{
 		enter(ID_VARIABLE);
+		getsym();
+	}
+	else if (sym == SYM_ARRAY)
+	{
+		enter(ID_ARRAY);
 		getsym();
 	}
 	else
@@ -463,6 +629,28 @@ void factor(symset fsys)
 				case ID_VARIABLE:
 					mk = (mask *)&table[i];
 					gen(LOD, level - mk->level, mk->address);
+					break;
+				case ID_PROCEDURE:
+					error(21); // Procedure identifier can not be in an expression.
+					break;
+				} // switch
+			}
+			getsym();
+		}
+		else if (sym == SYM_ARRAY)
+		{
+			if ((i = position(id)) == 0)
+			{
+				error(11); // Undeclared identifier.
+			}
+			else
+			{
+				switch (table[i].kind)
+				{
+					mask *mk;
+				case ID_ARRAY:
+					mk = (mask *)&table[i];
+					gen(LOD, level - mk->level, mk->address+length-1);
 					break;
 				case ID_PROCEDURE:
 					error(21); // Procedure identifier can not be in an expression.
@@ -634,6 +822,35 @@ void statement(symset fsys)
 		if (i)
 		{
 			gen(STO, level - mk->level, mk->address);
+		}
+	}
+	else if (sym == SYM_ARRAY)
+	{
+		// variable assignment
+		mask *mk;
+		if (!(i = position(id)))
+		{
+			error(11); // Undeclared identifier.
+		}
+		else if (table[i].kind != ID_ARRAY)
+		{
+			error(12); // Illegal assignment.
+			i = 0;
+		}
+		getsym();
+		if (sym == SYM_BECOMES)
+		{
+			getsym();
+		}
+		else
+		{
+			error(13); // ':=' expected.
+		}
+		expression(fsys);
+		mk = (mask *)&table[i];
+		if (i)
+		{
+			gen(STO, level - mk->level, mk->address + length - 1);
 		}
 	}
 	else if (sym == SYM_CALL)

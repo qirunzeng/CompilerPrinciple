@@ -1,8 +1,8 @@
-var i,j,k, l, m;
+var i,j,k[20][10];
 begin
-  i := -1;
-  j := !i;
-  l := !(i&&j);
-  k := (i+j)&&l;
-  m := (j&&l) + 2;
+  k[19][1] :=2;
+  i := 1;
+  j := k[19][1];
+  if i||j then
+  i := 3;
 end.

@@ -9,7 +9,78 @@
 
 #include "PL0.h"
 #include "set.c"
+Array *createlist(void)
+{
+	// 使用 malloc 分配内存来创建链表节点
+	Array *head = (Array *)malloc(sizeof(Array));
 
+	if (head == NULL)
+	{
+		printf("Memory allocation failed!\n");
+		return NULL;
+	}
+
+	// 初始化结构体的各个成员
+	head->id[0] = '\0'; // 字符串 id 初始化为空字符串
+	head->dim = 0;		// 数组维度初始化为 0
+	for (int i = 0; i < MAXARRAYDIM; i++)
+	{
+		head->dim_number[i] = 0; // 每个维度的大小初始化为 0
+	}
+	head->next = NULL; // 链表中的下一个节点初始化为 NULL
+
+	return head;
+}
+Array *findtail(Array *head)
+{
+	Array *p = head;
+	while (p->next != NULL)
+	{
+		p = p->next;
+	}
+	return p;
+}
+int compare(char *a, char *b)
+{
+	int i = 0;
+	while (*(a + i) != 0)
+	{
+		if (*(a + i) != *(b + i))
+		{
+			return 0;
+		}
+		i++;
+	}
+	if (*(b + i) != 0)
+		return 0;
+	return 1;
+}
+int searcharray(Array *head, char *id)
+{
+	Array *p = head;
+	while (p != NULL)
+	{
+		if (!strcmp(p->id, id))
+		{
+			return 1;
+		}
+		p = p->next;
+	}
+	return 0;
+}
+Array *findarray(Array *head, char *id)
+{
+	Array *p = head;
+	while (p->next != NULL)
+	{
+		if (strcmp(p->id, id) == 0)
+		{
+			break;
+		}
+		p = p->next;
+	}
+	return p;
+}
 //////////////////////////////////////////////////////////////////////
 // print error message.
 void error(int n)
@@ -24,7 +95,6 @@ void error(int n)
 	err++;
 } // error
 
-//////////////////////////////////////////////////////////////////////
 void getch(void)
 {
 	if (cc == ll)
@@ -37,7 +107,7 @@ void getch(void)
 		ll = cc = 0;
 		printf("%5d  ", cx);
 		while ((!feof(infile)) // added & modified by alex 01-02-09
-			   && ((ch = getc(infile))))
+			   && ((ch = getc(infile)) != '\n'))
 		{
 			printf("%c", ch);
 			line[++ll] = ch;
@@ -54,8 +124,7 @@ void getsym(void)
 {
 	int i, k;
 	char a[MAXIDLEN + 1];
-
-	while (ch == ' ' || ch == '\t' || ch == '\n')
+	while (ch == ' ' || ch == '\t' || ch == '\n'|| ch == '\r')
 	{
 		getch();
 	}
@@ -125,7 +194,76 @@ void getsym(void)
 		if (++i)
 			sym = wsym[i]; // symbol is a reserved word
 		else
-			sym = SYM_IDENTIFIER; // symbol is an identifier
+		{
+			length = 0;	 // 清零上次的数组长度
+			int dim = 0; // 用于记录当前是第几个维度，最前面为第一维度
+			int dim_number[MAXARRAYDIM];
+			if (ch == '[')
+			{
+				while (ch == '[')
+				{
+					getch();
+					char len[MAXARRAYLEN];
+					for (int i = 0; i < MAXARRAYLEN; i++)
+					{
+						len[i] = '\0';
+					}
+					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变量
+					while (ch != ']')
+					{
+						if (help_cacu_len <= MAXARRAYLEN)
+						{
+							len[help_cacu_len] = ch;
+						}
+						else
+							error(34);
+						help_cacu_len++;
+						getch();
+					}
+					dim_number[dim] = atoi(len);
+					dim++;
+					getch();
+				}
+				if (!searcharray(arraylist, id))
+				{
+					Array *newnode;
+					newnode = (Array *)malloc(sizeof(Array));
+					strcpy(newnode->id, id);
+					newnode->next = NULL;
+					newnode->dim = dim;
+					for (int i = 0; i < dim; i++)
+					{
+						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化为 0
+					}
+					Array*p=findtail(arraylist);
+					p->next = newnode;
+					int multiple = 1; // 计算乘积
+					for (int num = 0; num < dim; num++)
+					{
+						multiple = multiple * dim_number[num];
+					}
+					length = multiple;
+				}
+				else
+				{
+					Array *current_array;
+					current_array = findarray(arraylist, id);
+					int current_dim = current_array->dim;
+					for (int i = 0; i < dim; i++)
+					{
+						int multiple = dim_number[i];
+						for (int j = i + 1; j < dim; j++)
+						{
+							multiple = multiple * (current_array->dim_number[j]);
+						}
+						length = length + multiple;
+					}
+				}
+				sym = SYM_ARRAY;
+			}
+			else
+				sym = SYM_IDENTIFIER;
+		} // symbol is an identifier
 	}
 	else if (isdigit(ch))
 	{ // symbol is a number.
@@ -253,7 +391,7 @@ void gen(int x, int y, int z)
 	code[cx].l = y;
 	code[cx++].a = z;
 	printf("%\n");
-	printf("%5d %s\t%d\t%d\n", cx-1, mnemonic[code[cx-1].f], code[cx-1].l, code[cx-1].a);
+	printf("%5d %s\t%d\t%d\n", cx - 1, mnemonic[code[cx - 1].f], code[cx - 1].l, code[cx - 1].a);
 } // gen
 
 //////////////////////////////////////////////////////////////////////
@@ -283,26 +421,39 @@ void enter(int kind)
 	tx++;
 	strcpy(table[tx].name, id);
 	table[tx].kind = kind;
-	switch (kind)
+	if (length == 0)
 	{
-	case ID_CONSTANT:
-		if (num > MAXADDRESS)
+		switch (kind)
 		{
-			error(25); // The number is too great.
-			num = 0;
+		case ID_CONSTANT:
+			if (num > MAXADDRESS)
+			{
+				error(25); // The number is too great.
+				num = 0;
+			}
+			table[tx].value = num;
+			break;
+		case ID_VARIABLE:
+			mk = (mask *)&table[tx];
+			mk->level = level;
+			mk->address = dx++;
+			break;
+		case ID_PROCEDURE:
+			mk = (mask *)&table[tx];
+			mk->level = level;
+			break;
+		} // switch
+	}
+	else
+	{
+		if (kind == ID_ARRAY)
+		{
+			mk = (mask *)&table[tx];
+			mk->level = level;
+			mk->address = dx;
+			dx = dx + length;
 		}
-		table[tx].value = num;
-		break;
-	case ID_VARIABLE:
-		mk = (mask *)&table[tx];
-		mk->level = level;
-		mk->address = dx++;
-		break;
-	case ID_PROCEDURE:
-		mk = (mask *)&table[tx];
-		mk->level = level;
-		break;
-	} // switch
+	}
 } // enter
 
 //////////////////////////////////////////////////////////////////////
@@ -354,6 +505,11 @@ void vardeclaration(void)
 	if (sym == SYM_IDENTIFIER)
 	{
 		enter(ID_VARIABLE);
+		getsym();
+	}
+	else if (sym == SYM_ARRAY)
+	{
+		enter(ID_ARRAY);
 		getsym();
 	}
 	else
@@ -411,6 +567,28 @@ void factor(symset fsys)
 			}
 			getsym();
 		}
+		else if (sym == SYM_ARRAY)
+		{
+			if ((i = position(id)) == 0)
+			{
+				error(11); // Undeclared identifier.
+			}
+			else
+			{
+				switch (table[i].kind)
+				{
+					mask *mk;
+				case ID_ARRAY:
+					mk = (mask *)&table[i];
+					gen(LOD, level - mk->level, mk->address+length-1);
+					break;
+				case ID_PROCEDURE:
+					error(21); // Procedure identifier can not be in an expression.
+					break;
+				} // switch
+			}
+			getsym();
+		}
 		else if (sym == SYM_NUMBER)
 		{
 			if (num > MAXADDRESS)
@@ -457,10 +635,10 @@ void term(symset fsys)
 {
 	int mulop; // multiplication operator
 	symset set;
-	
-	set = uniteset(fsys, createset(SYM_TIMES, SYM_SLASH,SYM_AND, SYM_NULL));
+
+	set = uniteset(fsys, createset(SYM_TIMES, SYM_SLASH, SYM_AND, SYM_NULL));
 	factor(set);
-	while (sym == SYM_TIMES || sym == SYM_SLASH||sym==SYM_AND)
+	while (sym == SYM_TIMES || sym == SYM_SLASH || sym == SYM_AND)
 	{
 		mulop = sym;
 		getsym();
@@ -482,45 +660,56 @@ void term(symset fsys)
 } // term
 
 //////////////////////////////////////////////////////////////////////
-void expression(symset fsys) {
+void expression(symset fsys)
+{
 	int addop;
 	symset set;
 
 	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_OR, SYM_NULL));
-	
+
 	term(set);
-	while (sym == SYM_PLUS || sym == SYM_MINUS||sym==SYM_OR||sym == SYM_EQU || sym == SYM_NEQ||sym == SYM_GEQ||sym == SYM_GTR||sym == SYM_LES||sym == SYM_LEQ) {
+	while (sym == SYM_PLUS || sym == SYM_MINUS || sym == SYM_OR || sym == SYM_EQU || sym == SYM_NEQ || sym == SYM_GEQ || sym == SYM_GTR || sym == SYM_LES || sym == SYM_LEQ)
+	{
 		addop = sym;
 		getsym();
 		term(set);
-		if (addop == SYM_PLUS) {
+		if (addop == SYM_PLUS)
+		{
 			gen(OPR, 0, OPR_ADD);
 		}
-		else if(addop == SYM_OR){
+		else if (addop == SYM_OR)
+		{
 			gen(OPR, 0, OPR_OR);
 		}
-		else if(addop == SYM_EQU){
+		else if (addop == SYM_EQU)
+		{
 			gen(OPR, 0, OPR_EQU);
 		}
-		else if(addop == SYM_NEQ){
+		else if (addop == SYM_NEQ)
+		{
 			gen(OPR, 0, OPR_NEQ);
 		}
-		else if(addop == SYM_GEQ){
+		else if (addop == SYM_GEQ)
+		{
 			gen(OPR, 0, OPR_GEQ);
 		}
-		else if(addop == SYM_GTR){
+		else if (addop == SYM_GTR)
+		{
 			gen(OPR, 0, OPR_GTR);
 		}
-		else if(addop == SYM_LES){
+		else if (addop == SYM_LES)
+		{
 			gen(OPR, 0, OPR_LES);
 		}
-		else if(addop == SYM_LEQ){
+		else if (addop == SYM_LEQ)
+		{
 			gen(OPR, 0, OPR_LEQ);
 		}
-		else {
+		else
+		{
 			gen(OPR, 0, OPR_MIN);
 		}
-    } // while
+	} // while
 	destroyset(set);
 } // expression
 
@@ -576,6 +765,35 @@ void statement(symset fsys)
 		if (i)
 		{
 			gen(STO, level - mk->level, mk->address);
+		}
+	}
+	else if (sym == SYM_ARRAY)
+	{
+		// variable assignment
+		mask *mk;
+		if (!(i = position(id)))
+		{
+			error(11); // Undeclared identifier.
+		}
+		else if (table[i].kind != ID_ARRAY)
+		{
+			error(12); // Illegal assignment.
+			i = 0;
+		}
+		getsym();
+		if (sym == SYM_BECOMES)
+		{
+			getsym();
+		}
+		else
+		{
+			error(13); // ':=' expected.
+		}
+		expression(fsys);
+		mk = (mask *)&table[i];
+		if (i)
+		{
+			gen(STO, level - mk->level, mk->address + length - 1);
 		}
 	}
 	else if (sym == SYM_CALL)
@@ -914,32 +1132,37 @@ void interpret()
 					{
 						stack[top] = 1;
 					}
-					else{
-					stack[top] = 0;
-				    }
+					else
+					{
+						stack[top] = 0;
+					}
 				}
-				else{
+				else
+				{
 					stack[top] = 0;
 				}
 				break;
 			case OPR_OR: // ! OR
 				top--;
-				if(stack[top]){
-					stack[top]=1;
+				if (stack[top])
+				{
+					stack[top] = 1;
 				}
-				else if(stack[top+1]){
-					stack[top]=1;
+				else if (stack[top + 1])
+				{
+					stack[top] = 1;
 				}
-				else{
-					stack[top]=0;
+				else
+				{
+					stack[top] = 0;
 				}
 
 				break;
 			case OPR_NOT: // ! NOT
-			    if(stack[top])
-				stack[top] = 0;
+				if (stack[top])
+					stack[top] = 0;
 				else
-				stack[top] = 1;
+					stack[top] = 1;
 				break;
 			} // switch
 			break;
@@ -983,7 +1206,7 @@ void main()
 	char s[80];
 	int i;
 	symset set, set1, set2;
-
+	arraylist = createlist();
 	printf("Please input source file name: "); // get file name to be compiled
 	scanf("%s", s);
 	if ((infile = fopen(s, "r")) == NULL)
@@ -997,7 +1220,7 @@ void main()
 	// create begin symbol sets
 	declbegsys = createset(SYM_CONST, SYM_VAR, SYM_PROCEDURE, SYM_NULL);
 	statbegsys = createset(SYM_BEGIN, SYM_CALL, SYM_IF, SYM_WHILE, SYM_NULL);
-	facbegsys = createset(SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_NOT,SYM_NULL);
+	facbegsys = createset(SYM_IDENTIFIER, SYM_NUMBER, SYM_LPAREN, SYM_MINUS, SYM_NOT, SYM_ARRAY, SYM_NULL);
 
 	err = cc = cx = ll = 0; // initialize global variables
 	ch = ' ';
