@@ -1,0 +1,9 @@
+var i,j,k, l, m;
+begin
+  i := -1;
+  j := !i;
+  l := !(i&&j);
+  k := (i+j)&&l;
+  m := (j&&l) + 2;
+  exit
+end.
