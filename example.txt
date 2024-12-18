@@ -2,6 +2,11 @@ var i,j;
 begin
   i := 0;
   j := 1;
-  if i > 10 then
-  j := 3;
+ if i > 10 then
+  j := 3,
+ elif j > 1 then
+  j := 3,
+ else 
+  j:=4;
+ j:=5;
 end.
