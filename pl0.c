@@ -465,6 +465,8 @@ void gen(int x, int y, int z)
 	code[curr_ins].func_code = x;
 	code[curr_ins].level = y;
 	code[curr_ins].addr = z;
+	printf("%\n");
+	printf("%5d %s\t%d\t%d\n", curr_ins - 1, mnemonic[code[curr_ins - 1].func_code], code[curr_ins - 1].level, code[curr_ins - 1].addr);
     curr_ins++; // 下一条指令
 } // gen
 
@@ -884,6 +886,10 @@ void statement(symset fsys)
 	{ // if statement
 		getsym();
 		int i = 0;
+		int if_position[MAXIF];
+		for(int k=0;k<MAXIF;k++){
+			if_position[k]=0;
+		}
 		set1 = createset(SYM_THEN, SYM_DO, SYM_SEMICOLON, SYM_ELIF, SYM_ELSE, SYM_NULL);
 		set = uniteset(set1, fsys);
 		condition(set);
@@ -900,6 +906,8 @@ void statement(symset fsys)
 		cx1 = curr_ins;
 		gen(JPC, 0, 0);
 		statement(fsys);
+		if_position[i]=curr_ins;
+		gen(JMP,0,0);
 		code[cx1].addr = curr_ins;
 		if (sym == SYM_SEMICOLON)
 		{
@@ -912,7 +920,7 @@ void statement(symset fsys)
 		while (sym == SYM_ELIF)
 		{
 			getsym();
-			if ( (++i) > 20)
+			if ( (++i) > MAXIF)
 			{
 				error(67); // Too many elifs.
 				--i;
@@ -934,6 +942,8 @@ void statement(symset fsys)
 			cx1 = curr_ins;
 			gen(JPC, 0, 0);
 			statement(fsys);
+			if_position[i]=curr_ins;
+		    gen(JMP,0,0);
 			code[cx1].addr = curr_ins;
 			if (sym == SYM_SEMICOLON)
 			{
@@ -950,6 +960,11 @@ void statement(symset fsys)
 			getsym();
 			statement(fsys);
 		}
+		int help_complete_if=0;//为了回填之前的JPC
+            while(if_position[help_complete_if]!=0){
+				code[if_position[help_complete_if]].addr=curr_ins;
+                help_complete_if++;
+			}
 			
 	}
 	else if (sym == SYM_BEGIN)
@@ -1005,7 +1020,7 @@ void statement(symset fsys)
 		code[cx2].addr = curr_ins;
 	}
 	else if (sym == SYM_EXIT) { 
-		gen(OPR, 0, OPR_RET); // 退出当前程序执行
+		gen(OPR, 0, OPR_EXIT); // 退出当前程序执行
 		getsym();
 	}
 	else if (sym == SYM_RETURN) {
@@ -1197,7 +1212,7 @@ void interpret()
 	instruction i; // instruction register
 
 	printf("Begin executing PL/0 program.\n");
-
+    int flag=0;//flag用来确保没有exit
 	pc = 0;
 	b = 1;
 	top = 3;
@@ -1306,6 +1321,9 @@ void interpret()
 				else
 				stack[top] = 1;
 				break;
+			case OPR_EXIT:
+				flag=1;
+				break;
 			} // switch
 			break;
 		case LOD:
@@ -1337,7 +1355,7 @@ void interpret()
 			break;
 		} // switch
 	}
-	while (pc);
+	while (pc&&!flag);
 
 	printf("End executing PL/0 program.\n");
 } // interpret

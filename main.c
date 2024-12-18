@@ -1,5 +1,4 @@
 #include "pl0.h"
-
 int main()
 {
 	FILE *hbin;

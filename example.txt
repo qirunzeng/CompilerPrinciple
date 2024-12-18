@@ -1,8 +1,12 @@
-var i,j,k[20][10];
+var i,j;
 begin
-  k[19][1] :=2;
-  i := 1;
-  j := k[19][1];
-  if i||j then
+  i := 0;
+  j := 1;
+  if i then
   i := 3;
+  elif j then
+  exit;
+  else
+  i := 5;
+  i := 5;
 end.

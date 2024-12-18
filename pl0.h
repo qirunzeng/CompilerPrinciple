@@ -15,6 +15,7 @@
 #define MAXIDLEN   10     // length of identifiers
 #define MAXARRAYLEN 3	 // 数组一个维度的最大长度，3代表999
 #define MAXARRAYDIM 3	 // 最大数组维度，现在为3
+#define MAXIF     100   //最大if分支数 
 #define MAXADDRESS 32767  // maximum address
 #define MAXLEVEL   32     // maximum depth of nesting block
 #define CXMAX      500    // size of code array
@@ -83,7 +84,7 @@ enum oprcode
 	OPR_RET, OPR_NEG, OPR_ADD, OPR_MIN,
 	OPR_MUL, OPR_DIV, OPR_ODD, OPR_EQU,
 	OPR_NEQ, OPR_LES, OPR_LEQ, OPR_GTR,
-	OPR_GEQ, OPR_AND, OPR_OR, OPR_NOT
+	OPR_GEQ, OPR_AND, OPR_OR, OPR_NOT,OPR_EXIT
 };
 
 
