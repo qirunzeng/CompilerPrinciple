@@ -41,7 +41,7 @@ const char* err_msg[] = {
  /* 34 */ "Big ARRAY ERROR"
 };
 
-int length ;		   // 用于存数组长度
+int length ;		   // 用于存数组长�?
 Array *arraylist;
 char ch;         // last character read
 int  sym;        // last symbol read
@@ -79,7 +79,7 @@ char csym[NSYM+1] = {
 	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'
 };
 
-const char* mnemonic[MAXINS] = { // 指令助记符
+const char* mnemonic[MAXINS] = { // 指令助记�?
 	"LIT", // Load constant value to stack top
     "OPR", // Arithmetic operation
     "LOD", // Load value to stack top from stack
@@ -95,7 +95,7 @@ FILE* infile;
 //List相关操作用于实现数组
 Array *createlist(void)
 {
-	// 使用 malloc 分配内存来创建链表节点
+	// 使用 malloc 分配内存来创建链表节�?
 	Array *head = (Array *)malloc(sizeof(Array));
 
 	if (head == NULL)
@@ -104,14 +104,14 @@ Array *createlist(void)
 		return NULL;
 	}
 
-	// 初始化结构体的各个成员
-	head->id[0] = '\0'; // 字符串 id 初始化为空字符串
+	// 初始化结构体的各个成�?
+	head->id[0] = '\0'; // 字符�? id 初始化为空字符串
 	head->dim = 0;		// 数组维度初始化为 0
 	for (int i = 0; i < MAXARRAYDIM; i++)
 	{
-		head->dim_number[i] = 0; // 每个维度的大小初始化为 0
+		head->dim_number[i] = 0; // 每个维度的大小初始化�? 0
 	}
-	head->next = NULL; // 链表中的下一个节点初始化为 NULL
+	head->next = NULL; // 链表中的下一个节点初始化�? NULL
 
 	return head;
 }
@@ -178,7 +178,7 @@ void error(const int n) {
 } // error
 
 void getch() {
-    // 读取一个字符，并存入 ch 中
+    // 读取一个字符，并存�? ch �?
 	if (char_cnt == line_length) {
 		if (feof(infile)) {
 			printf("\nPROGRAM INCOMPLETE\n");
@@ -255,7 +255,7 @@ void getsym(void)
 
 	if (isalpha(ch))
 	{ // symbol is a reserved word or an identifier.
-	    length = 0;	 // 清零上次的数组长度
+	    length = 0;	 // 清零上次的数组长�?
 		k = 0;
 		do
 		{
@@ -273,7 +273,7 @@ void getsym(void)
 			sym = wsym[i]; // symbol is a reserved word
 		else
 		{
-			length = 0;	 // 清零上次的数组长度
+			length = 0;	 // 清零上次的数组长�?
 			int dim = 0; // 用于记录当前是第几个维度，最前面为第一维度
 			int dim_number[MAXARRAYDIM];
 			if (ch == '[')
@@ -286,7 +286,7 @@ void getsym(void)
 					{
 						len[i] = '\0';
 					}
-					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变量
+					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变�?
 					while (ch != ']')
 					{
 						if (help_cacu_len <= MAXARRAYLEN)
@@ -311,7 +311,7 @@ void getsym(void)
 					newnode->dim = dim;
 					for (int i = 0; i < dim; i++)
 					{
-						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化为 0
+						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化�? 0
 					}
 					Array*p=findtail(arraylist);
 					p->next = newnode;
@@ -465,9 +465,7 @@ void gen(int x, int y, int z)
 	code[curr_ins].func_code = x;
 	code[curr_ins].level = y;
 	code[curr_ins].addr = z;
-	printf("%\n");
-	printf("%5d %s\t%d\t%d\n", curr_ins - 1, mnemonic[code[curr_ins - 1].func_code], code[curr_ins - 1].level, code[curr_ins - 1].addr);
-    curr_ins++; // 下一条指令
+    curr_ins++; // 下一条指�?
 } // gen
 
 // tests if error occurs and skips all symbols that do not belongs to s1 or s2.
@@ -736,7 +734,13 @@ void expression(symset fsys) {
 	int addop;
 	symset set;
 
-	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_OR, SYM_NULL));
+	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_OR,     // odd
+	SYM_EQU,        // =
+	SYM_NEQ,        // <>
+	SYM_LES,        // <
+	SYM_LEQ,        // <=
+	SYM_GTR,        // >
+	SYM_GEQ, SYM_NULL));
 	
 	term(set);
 	while (sym == SYM_PLUS || sym == SYM_MINUS||sym==SYM_OR||sym == SYM_EQU || sym == SYM_NEQ||sym == SYM_GEQ||sym == SYM_GTR||sym == SYM_LES||sym == SYM_LEQ) {
@@ -1020,23 +1024,23 @@ void statement(symset fsys)
 		code[cx2].addr = curr_ins;
 	}
 	else if (sym == SYM_EXIT) { 
-		gen(OPR, 0, OPR_EXIT); // 退出当前程序执行
+		gen(OPR, 0, OPR_EXIT); // 退出当前程序执�?
 		getsym();
 	}
 	else if (sym == SYM_RETURN) {
 		getsym();
 		if (sym != SYM_SEMICOLON) {
-			expression(fsys); // 计算返回值
+			expression(fsys); // 计算返回�?
 			gen(STO, 0, 0);   // 将结果存入返回地址
 		}
-		gen(OPR, 0, OPR_RET); // 退出当前过程
+		gen(OPR, 0, OPR_RET); // 退出当前过�?
 		getsym();
 	}
 	else if (sym == SYM_FOR) {
 		getsym();
 		if (sym == SYM_LPAREN) {
 			getsym();
-			statement(fsys); // 初始化语句
+			statement(fsys); // 初始化语�?
 			int cx1 = curr_ins; 
 			condition(fsys);  // 条件判断
 			int cx2 = curr_ins; 
@@ -1069,7 +1073,7 @@ void statement(symset fsys)
 			
 //////////////////////////////////////////////////////////////////////
 /**
- * @brief 处理块，包括常量声明、变量声明、过程声明、语句
+ * @brief 处理块，包括常量声明、变量声明、过程声明、语�?
  */
 void block(symset fsys)
 {
@@ -1117,7 +1121,7 @@ void block(symset fsys)
 					vardeclaration();
 				}
 				if (sym == SYM_SEMICOLON) { 
-                    // 表示变量声明结束，应该进行下一步
+                    // 表示变量声明结束，应该进行下一�?
 					getsym(); 
                     break;
 				}
@@ -1232,7 +1236,7 @@ void interpret()
 				top = b - 1;
 				pc = stack[top + 3];
 				b = stack[top + 2];
-				stack[top] = stack[top + 4]; // 保存返回值
+				stack[top] = stack[top + 4]; // 保存返回�?
 				break;
 			case OPR_NEG:
 				stack[top] = -stack[top];
@@ -1440,7 +1444,7 @@ void interpret()
 // 	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'
 // };
 
-// const char* mnemonic[MAXINS] = { // 指令助记符
+// const char* mnemonic[MAXINS] = { // 指令助记�?
 // 	"LIT", // Load constant value to stack top
 //     "OPR", // Arithmetic operation
 //     "LOD", // Load value to stack top from stack
@@ -1467,7 +1471,7 @@ void interpret()
 // } // error
 
 // void getch() {
-//     // 读取一个字符，并存入 ch 中
+//     // 读取一个字符，并存�? ch �?
 // 	if (char_cnt == line_length) {
 // 		if (feof(infile)) {
 // 			printf("\nPROGRAM INCOMPLETE\n");
@@ -1685,7 +1689,7 @@ void interpret()
 // 	code[curr_ins].func_code = x;
 // 	code[curr_ins].level = y;
 // 	code[curr_ins].addr = z;
-//     curr_ins++; // 下一条指令
+//     curr_ins++; // 下一条指�?
 // } // gen
 
 // // tests if error occurs and skips all symbols that do not belongs to s1 or s2.
@@ -2104,7 +2108,7 @@ void interpret()
 			
 // //////////////////////////////////////////////////////////////////////
 // /**
-//  * @brief 处理块，包括常量声明、变量声明、过程声明、语句
+//  * @brief 处理块，包括常量声明、变量声明、过程声明、语�?
 //  */
 // void block(symset fsys)
 // {
@@ -2152,7 +2156,7 @@ void interpret()
 // 					vardeclaration();
 // 				}
 // 				if (sym == SYM_SEMICOLON) { 
-//                     // 表示变量声明结束，应该进行下一步
+//                     // 表示变量声明结束，应该进行下一�?
 // 					getsym(); 
 //                     break;
 // 				}

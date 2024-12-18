@@ -1,4 +1,5 @@
-#include "pl0.h"
+#include "pl0.c"
+#include "set.c"
 int main()
 {
 	FILE *hbin;
@@ -48,7 +49,7 @@ int main()
 			fwrite(&code[i], sizeof(instruction), 1, hbin);
 		fclose(hbin);
 	}
-	if (err <= 100)
+	if (err == 0)
 		interpret();
 	else
 		printf("There are %d error(s) in PL/0 program.\n", err);

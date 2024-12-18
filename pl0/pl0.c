@@ -11,7 +11,7 @@
 #include "set.c"
 Array *createlist(void)
 {
-	// 使用 malloc 分配内存来创建链表节点
+	// 使用 malloc 分配内存来创建链表节�?
 	Array *head = (Array *)malloc(sizeof(Array));
 
 	if (head == NULL)
@@ -20,14 +20,14 @@ Array *createlist(void)
 		return NULL;
 	}
 
-	// 初始化结构体的各个成员
-	head->id[0] = '\0'; // 字符串 id 初始化为空字符串
+	// 初始化结构体的各个成�?
+	head->id[0] = '\0'; // 字符�? id 初始化为空字符串
 	head->dim = 0;		// 数组维度初始化为 0
 	for (int i = 0; i < MAXARRAYDIM; i++)
 	{
-		head->dim_number[i] = 0; // 每个维度的大小初始化为 0
+		head->dim_number[i] = 0; // 每个维度的大小初始化�? 0
 	}
-	head->next = NULL; // 链表中的下一个节点初始化为 NULL
+	head->next = NULL; // 链表中的下一个节点初始化�? NULL
 
 	return head;
 }
@@ -195,7 +195,7 @@ void getsym(void)
 			sym = wsym[i]; // symbol is a reserved word
 		else
 		{
-			length = 0;	 // 清零上次的数组长度
+			length = 0;	 // 清零上次的数组长�?
 			int dim = 0; // 用于记录当前是第几个维度，最前面为第一维度
 			int dim_number[MAXARRAYDIM];
 			if (ch == '[')
@@ -208,7 +208,7 @@ void getsym(void)
 					{
 						len[i] = '\0';
 					}
-					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变量
+					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变�?
 					while (ch != ']')
 					{
 						if (help_cacu_len <= MAXARRAYLEN)
@@ -233,7 +233,7 @@ void getsym(void)
 					newnode->dim = dim;
 					for (int i = 0; i < dim; i++)
 					{
-						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化为 0
+						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化�? 0
 					}
 					Array*p=findtail(arraylist);
 					p->next = newnode;
