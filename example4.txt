@@ -1,8 +1,9 @@
-procedure func(var p, var q);
+var i,j,k, l, m;
 begin
-  p := p + q;
-end;
-
-begin
-  call func(1);
+  i := -1;
+  j := !i;
+  l := !(i&&j);
+  k := (i+j)&&l;
+  exit;
+  m := (j&&l) + 2;
 end.

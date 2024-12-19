@@ -1,8 +1,8 @@
 var i,j,k[20][10];
 begin
-  k[19][1] :=2;
+  k[19][1] :=0;
   i := 1;
   j := k[19][1];
-  if i||j then
+  if (i>10)&&j then
   i := 3;
 end.

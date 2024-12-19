@@ -1,0 +1,223 @@
+[33mcommit 1c0fa90927180dd071c720cf5a5405957e3752e5[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Wed Dec 18 22:40:35 2024 +0800
+
+    修改注释问题
+
+[33mcommit 030d0f02a8481e1daeeb5b848013bfee32b30857[m
+Author: jsr1023 <2317655539@qq.com>
+Date:   Wed Dec 18 19:43:34 2024 +0800
+
+    修复了IF语句分支错并且改变了文法
+
+[33mcommit cbf227e5feb12c2d13f8b091fac20a5930789fe8[m
+Author: jsr1023 <2317655539@qq.com>
+Date:   Wed Dec 18 15:24:21 2024 +0800
+
+    修复了IF语句的sympol错
+
+[33mcommit c63742fda14b9c4c5e69d39c98e24ba19960017a[m
+Author: jsr1023 <2317655539@qq.com>
+Date:   Wed Dec 18 12:12:04 2024 +0800
+
+    帮助修复了exit（使用flag在执行时停止运行），还有elif和else不兼容问题（加了一条跳到所有分支之后的指令）
+
+[33mcommit 377677978d5c29803628fa4b17e6a1ef40ef75dc[m
+Merge: 878bc45 8a65193
+Author: vvcvv-as <142417101@qq.com>
+Date:   Tue Dec 17 13:31:00 2024 -0600
+
+    4code, test to be done
+
+[33mcommit 878bc45a1864beb9e90a362e1238e3034a83cdba[m
+Author: vvcvv-as <142417101@qq.com>
+Date:   Tue Dec 17 13:29:34 2024 -0600
+
+    4code, need further check
+
+[33mcommit 8a651932b201084f7a9e71cecb275e26d150dcda[m
+Author: jsr1023 <2317655539@qq.com>
+Date:   Tue Dec 17 21:23:14 2024 +0800
+
+    完成基础部分1，2，3
+
+[33mcommit 333cc16e8d30f0da80569108cc5fd724c297cd38[m
+Merge: 5c17ef1 696fe6d
+Author: jsr1023 <2317655539@qq.com>
+Date:   Tue Dec 17 08:56:57 2024 +0800
+
+    Merge branch 'main' of https://github.com/qirunzeng/CompilerPrinciple
+
+[33mcommit 696fe6d8d78e65986c86a4c2cf5810a59c5dc4c3[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Tue Dec 17 00:04:48 2024 +0800
+
+    实现了与或非
+
+[33mcommit 1657295f920d87d6bfe8f5204067a065e74cd1fa[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 22:34:51 2024 +0800
+
+    !
+
+[33mcommit 5c17ef1a1b880195683f2f6fecc88753839354cf[m[33m ([m[1;32mnew-branch-name[m[33m)[m
+Author: jsr1023 <2317655539@qq.com>
+Date:   Mon Dec 16 21:04:11 2024 +0800
+
+    Add jsr's  folder 'pl0'
+
+[33mcommit e8d97d5bda086d11dee9575f12f0be463f1e32ea[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 19:38:59 2024 +0800
+
+    与或
+
+[33mcommit 2a04a00c9e376dc7bad8ff868bd609e4c2069da8[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 19:35:34 2024 +0800
+
+    AND OR
+
+[33mcommit b7b2ebd4a625c51b75070697aea253c7f4ccd370[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 18:31:24 2024 +0800
+
+    logic_expressino
+
+[33mcommit e08054f167d309a72ef3bb331cac8698e0ff508b[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 17:36:32 2024 +0800
+
+    脚本
+
+[33mcommit 335d753b8374d9596ce49943b8f6024f8be59ff6[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 17:30:14 2024 +0800
+
+    实现自动化脚本
+
+[33mcommit 767458bc7726ca2619d3f066640401bae3fd3178[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 17:11:02 2024 +0800
+
+    解决换行问题
+
+[33mcommit 898b4faea97883dfa56e149f909a0b77d388d0de[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 16:16:56 2024 +0800
+
+    Adding comments
+
+[33mcommit e0a456ff21e849a75c4bc9cc93c6a3aaafdb0cae[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Mon Dec 16 15:42:20 2024 +0800
+
+    Comments
+
+[33mcommit ad391128d64bd81925dfc8f3f6b4c3c18ca03683[m[33m ([m[1;31mCompilerPrinciple/main[m[33m)[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 22:09:48 2024 +0800
+
+    实现 && || !
+
+[33mcommit bf0190efeed52177eff1dc295398c4f7947d7fa1[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 21:28:36 2024 +0800
+
+    使用说明
+
+[33mcommit e5292d180caa22cc69d9f18a1cc56bf290653287[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 21:06:21 2024 +0800
+
+    bug fix
+
+[33mcommit 4a7512c75fd933d473f49c6fd68557e9daba8342[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 21:05:45 2024 +0800
+
+    优化文件结构
+
+[33mcommit 54456804a51b755b16d63a3ed843ec420578f3e6[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 21:05:11 2024 +0800
+
+    优化结构
+
+[33mcommit bd8c8a1b8be6ba5ba8a5d6827f2bf4698869d8c2[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 21:01:55 2024 +0800
+
+    使用说明
+
+[33mcommit ad08b3d9ffecd0ac01f94a57a04ccbae085821da[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 21:00:40 2024 +0800
+
+    优化文件结构
+
+[33mcommit c2854ad607e3c779d43f99efc7a2a13b204744aa[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 21:00:18 2024 +0800
+
+    优化文件结构
+
+[33mcommit cda5b14412adeab4845adead6572f17ed9a3073c[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 20:19:32 2024 +0800
+
+    优化文件结构
+
+[33mcommit 10e99c02e1b757bac442f4fc65ec79bf6f1e1d84[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 20:14:09 2024 +0800
+
+    注释
+
+[33mcommit 12f75fa7b1356051d588442d6148e15c9f655155[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 19:31:54 2024 +0800
+
+    var name
+
+[33mcommit 860e7bf8ee251a14222e8410a76f1b77e116ee5c[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 19:14:20 2024 +0800
+
+    TODO
+
+[33mcommit 3a0ad3a2141601278dd25a5f40882d1ac44e6701[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 15:00:58 2024 +0800
+
+    Adding &|!
+
+[33mcommit 77ed9e622eefe92b16be422199f0f2abcd678b1a[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 14:54:57 2024 +0800
+
+    Adding &\|!
+
+[33mcommit 1a9e9f477a0a27392c28bfb9fd16518508b1659d[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 14:48:10 2024 +0800
+
+    Adding && || from char to string in pl0.c TBD
+
+[33mcommit 8365f4aca21120c44c082ef4aebb4a5b2d4478cd[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 14:04:01 2024 +0800
+
+    modify var name
+
+[33mcommit da79613138fe2081a9db3bd504490bf9a2545b65[m
+Author: qirunzeng <110096047+qirunzeng@users.noreply.github.com>
+Date:   Sun Dec 15 13:41:24 2024 +0800
+
+    Create README.md
+
+[33mcommit dec4af6fb3d15a53027d9d691f1cae9650442526[m
+Author: Qirun Zeng <rewinery@outlook.com>
+Date:   Sun Dec 15 13:40:09 2024 +0800
+
+    Init repo
