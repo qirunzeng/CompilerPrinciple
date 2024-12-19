@@ -44,7 +44,7 @@ int length; // 用于存数组长�?
 Array *arraylist;
 char ch;			   // last character read
 int sym;			   // last symbol read
-int sym1;              // last last sympol read
+int sym1;			   // last last sympol read
 char id[MAXIDLEN + 1]; // last identifier read
 int num;			   // last number read
 int char_cnt;		   // character count
@@ -56,7 +56,10 @@ int level;
 int table_index;	  // table index
 int data_alloc_index; // data allocation index
 char line[80];
+int for_update_flag = 1; // 用来帮助把更新语句加在最后
 instruction code[CXMAX];
+instruction update_code[CXMAX];
+int update_ins = 0;
 int symbol_update_flag = 1;
 const char *word[NRW + 1] = {
 	"", /* place holder */
@@ -70,7 +73,7 @@ const int wsym[NRW + 1] = {
 
 const int ssym[NSYM + 1] = {
 	SYM_NULL, SYM_PLUS, SYM_MINUS, SYM_TIMES, SYM_SLASH,
-	SYM_LPAREN, SYM_RPAREN, SYM_EQU, SYM_COMMA, SYM_PERIOD, SYM_SEMICOLON,SYM_AND, SYM_OR, SYM_NOT};
+	SYM_LPAREN, SYM_RPAREN, SYM_EQU, SYM_COMMA, SYM_PERIOD, SYM_SEMICOLON, SYM_AND, SYM_OR, SYM_NOT};
 
 char csym[NSYM + 1] = {
 	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'};
@@ -202,42 +205,52 @@ void getch()
 // gets a symbol from input stream.
 void getsym(void)
 {
-	sym1=sym;
+	sym1 = sym;
 	int i, k;
 	char a[MAXIDLEN + 1];
 	while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
 	{
 		getch();
 	}
-	 while (ch == '/') {
+	while (ch == '/')
+	{
 		getch();
-		if (ch == '/') {
-			while (ch != '\n' && ch != '\r') {
+		if (ch == '/')
+		{
+			while (ch != '\n' && ch != '\r')
+			{
 				getch();
 			}
 		}
-		else if (ch == '*') {
+		else if (ch == '*')
+		{
 			getch();
-            int END_LOOP = 0;
-			while (1) {
+			int END_LOOP = 0;
+			while (1)
+			{
 				getch();
-				while (ch == '*') {
+				while (ch == '*')
+				{
 					getch();
-					if (ch == '/') {
+					if (ch == '/')
+					{
 						getch();
-                        END_LOOP = 1;
+						END_LOOP = 1;
 						break;
 					}
-					else {
+					else
+					{
 						continue;
-                    }
+					}
 				}
-                if (END_LOOP) {
-                    break;
-                }
+				if (END_LOOP)
+				{
+					break;
+				}
 			}
 		}
-		while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
+		while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+		{
 			getch();
 		}
 	}
@@ -451,10 +464,20 @@ void gen(int x, int y, int z)
 		printf("Fatal Error: Program too long.\n");
 		exit(1);
 	}
-	code[curr_ins].func_code = x;
-	code[curr_ins].level = y;
-	code[curr_ins].addr = z;
-	curr_ins++; // 下一条指�?
+	if (for_update_flag)
+	{
+		code[curr_ins].func_code = x;
+		code[curr_ins].level = y;
+		code[curr_ins].addr = z;
+		curr_ins++; // 下一条指令
+	}
+	else
+	{
+		update_code[update_ins].func_code = x;
+		update_code[update_ins].level = y;
+		update_code[update_ins].addr = z;
+		update_ins++;
+	}
 } // gen
 
 // tests if error occurs and skips all symbols that do not belongs to s1 or s2.
@@ -899,7 +922,7 @@ void statement(symset fsys)
 		{
 			if_position[k] = 0;
 		}
-		set1 = createset(SYM_THEN, SYM_DO, SYM_SEMICOLON,SYM_COMMA, SYM_ELIF, SYM_ELSE, SYM_NULL);
+		set1 = createset(SYM_THEN, SYM_DO, SYM_SEMICOLON, SYM_COMMA, SYM_ELIF, SYM_ELSE, SYM_NULL);
 		set = uniteset(set1, fsys);
 		condition(set);
 		destroyset(set1);
@@ -931,7 +954,7 @@ void statement(symset fsys)
 				--i;
 				break;
 			}
-			set1 = createset(SYM_THEN, SYM_DO, SYM_SEMICOLON,SYM_COMMA, SYM_ELIF, SYM_ELSE, SYM_NULL);
+			set1 = createset(SYM_THEN, SYM_DO, SYM_SEMICOLON, SYM_COMMA, SYM_ELIF, SYM_ELSE, SYM_NULL);
 			set = uniteset(set1, fsys);
 			condition(set);
 			destroyset(set1);
@@ -976,14 +999,14 @@ void statement(symset fsys)
 	else if (sym == SYM_BEGIN)
 	{ // block
 		getsym();
-		set1 = createset(SYM_SEMICOLON,SYM_COMMA, SYM_END, SYM_NULL);
+		set1 = createset(SYM_SEMICOLON, SYM_COMMA, SYM_END, SYM_NULL);
 		set = uniteset(set1, fsys);
 		statement(set);
-		while (sym == SYM_SEMICOLON || inset(sym, statbegsys)||sym == SYM_COMMA)
+		while (sym == SYM_SEMICOLON || inset(sym, statbegsys) || sym == SYM_COMMA)
 		{
-			if (sym == SYM_SEMICOLON ||sym == SYM_COMMA)
+			if (sym == SYM_SEMICOLON || sym == SYM_COMMA)
 			{
-				 getsym();
+				getsym();
 			}
 			else
 			{
@@ -1033,7 +1056,7 @@ void statement(symset fsys)
 	else if (sym == SYM_RETURN)
 	{
 		getsym();
-		if (sym != SYM_SEMICOLON ||sym == SYM_COMMA)
+		if (sym != SYM_SEMICOLON || sym == SYM_COMMA)
 		{
 			expression(fsys); // 计算返回�?
 			gen(STO, 0, 0);	  // 将结果存入返回地址
@@ -1049,10 +1072,11 @@ void statement(symset fsys)
 			getsym();
 			statement(fsys); // 初始化语�?
 			int cx1 = curr_ins;
+			getsym();
 			condition(fsys); // 条件判断
 			int cx2 = curr_ins;
 			gen(JPC, 0, 0); // 条件不满足时跳出
-			if (sym == SYM_SEMICOLON ||sym == SYM_COMMA)
+			if (sym == SYM_SEMICOLON || sym == SYM_COMMA)
 			{
 				getsym();
 			}
@@ -1061,8 +1085,10 @@ void statement(symset fsys)
 				error(10); // ';' expected
 			}
 			int cx3 = curr_ins;
+			for_update_flag = 0;
 			statement(fsys); // 更新语句
-			gen(JMP, 0, cx1);
+			for_update_flag = 1;
+			getsym();
 			if (sym == SYM_RPAREN)
 			{
 				getsym();
@@ -1071,8 +1097,16 @@ void statement(symset fsys)
 			{
 				error(22); // Missing ')'
 			}
-			statement(fsys);		   // 循环主体
-			gen(JMP, 0, cx3);		   // 跳回更新语句
+			statement(fsys); // 循环主体
+			for (int i = 0; i <= update_ins; i++)
+			{
+				code[curr_ins].func_code = update_code[i].func_code;
+				code[curr_ins].level = update_code[i].level;
+				code[curr_ins].addr = update_code[i].addr;
+				curr_ins++; // 下一条指令
+			}
+			update_ins=0;
+			gen(JMP, 0, cx1);		   // 跳回条件语句
 			code[cx2].addr = curr_ins; // 结束循环
 		}
 		else
@@ -1118,7 +1152,7 @@ void block(symset fsys)
 					getsym();
 					constdeclaration();
 				}
-				if (sym == SYM_SEMICOLON ||sym == SYM_COMMA)
+				if (sym == SYM_SEMICOLON || sym == SYM_COMMA)
 				{ // ;
 					getsym();
 					break;
@@ -1142,7 +1176,7 @@ void block(symset fsys)
 					getsym();
 					vardeclaration();
 				}
-				if (sym == SYM_SEMICOLON ||sym == SYM_COMMA)
+				if (sym == SYM_SEMICOLON || sym == SYM_COMMA)
 				{
 					// 表示变量声明结束，应该进行下一�?
 					getsym();
@@ -1171,7 +1205,7 @@ void block(symset fsys)
 				error(4);
 				// There must be an identifier to follow 'const', 'var', or 'procedure'.
 			}
-			if (sym == SYM_SEMICOLON ||sym == SYM_COMMA)
+			if (sym == SYM_SEMICOLON || sym == SYM_COMMA)
 			{
 				getsym();
 			}
@@ -1188,7 +1222,7 @@ void block(symset fsys)
 			destroyset(set);
 			table_index = saved_table_index;
 			level--;
-			if (sym == SYM_SEMICOLON||sym == SYM_COMMA)
+			if (sym == SYM_SEMICOLON || sym == SYM_COMMA)
 			{
 				getsym();
 				set1 = createset(SYM_IDENTIFIER, SYM_PROCEDURE, SYM_NULL);
@@ -1215,7 +1249,7 @@ void block(symset fsys)
 	mk->address = curr_ins;
 	cx0 = curr_ins;
 	gen(INT, 0, block_data_alloc_index);
-	set1 = createset(SYM_SEMICOLON, SYM_COMMA,SYM_END, SYM_NULL);
+	set1 = createset(SYM_SEMICOLON, SYM_COMMA, SYM_END, SYM_NULL);
 	set = uniteset(set1, fsys);
 	statement(set);
 	destroyset(set1);
