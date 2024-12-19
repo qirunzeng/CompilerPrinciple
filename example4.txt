@@ -1,0 +1,8 @@
+procedure func(var p, var q);
+begin
+  p := p + q;
+end;
+
+begin
+  call func(1);
+end.

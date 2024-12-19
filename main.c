@@ -2,6 +2,7 @@
 
 int main()
 {
+	printf("start start");
 	FILE *hbin;
 	char s[80];
 	int i;

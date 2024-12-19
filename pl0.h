@@ -23,6 +23,9 @@
 
 #define STACKSIZE  1000   // maximum storage
 
+#define PARAM_CONSTANT 1   //参数类型
+#define PARAM_VARIABLE 2
+#define PARAM_ARRAY    3
 /**
  * 符号
  */
@@ -139,6 +142,10 @@ typedef struct
 	char name[MAXIDLEN + 1];
 	int  kind;
 	int  value;
+	int level;
+	int address;
+	int param_count;
+	int param_types[MAXIDLEN];
 } comtab;
 
 extern comtab table[TABLE_INDEX_MAX];    // symbol table

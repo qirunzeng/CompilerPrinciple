@@ -37,8 +37,10 @@ const char* err_msg[] = {
 /* 29 */    "",
 /* 30 */    "",
 /* 31 */    "",
-/* 32 */    "There are too many levels."
- /* 34 */ "Big ARRAY ERROR"
+/* 32 */    "There are too many levels.",
+/* 33 */    "Big ARRAY ERROR",
+/* 34 */    "Parameter count mismatch.",
+/* 35 */    "Parameter type mismatch."
 };
 
 int length ;		   // 用于存数组长度
@@ -503,13 +505,26 @@ void enter(int kind)
 			table[table_index].value = num;
 			break;
 		case ID_VARIABLE:
-			mk = (mask *)&table[table_index];
-			mk->level = level;
-			mk->address = data_alloc_index++;
-			break;
+			if (table[table_index].param_count == 0)
+			{
+				mk = (mask *)&table[table_index];
+				mk->level = level;
+				mk->address = data_alloc_index++;
+				break;
+			}
+			else
+			{
+				mk = (mask*)&table[table_index];
+				mk->level = level;
+				mk->address = data_alloc_index++;
+				// mk->address = 3 + table[table_index].param_count;
+				break;
+			}
+			
 		case ID_PROCEDURE:
 			mk = (mask *)&table[table_index];
 			mk->level = level;
+			// table[table_index].param_count = 0;
 			break;
 		} // switch
 	}
@@ -801,6 +816,8 @@ void statement(symset fsys)
 		mask* mk;
 		if (! (i = position(id)))
 		{
+			printf("bug in statement");
+			printf("the bug is %s", id);
 			error(11); // Undeclared identifier.
 		}
 		else if (table[i].kind != ID_VARIABLE)
@@ -862,14 +879,96 @@ void statement(symset fsys)
 		}
 		else
 		{
-			if (! (i = position(id)))
+			int proc_index = position(id);
+			printf("position_id %d", proc_index);
+			if (proc_index == 0)
 			{
+				printf("bug in call");
 				error(11); // Undeclared identifier.
 			}
-			else if (table[i].kind == ID_PROCEDURE)
+			else if (table[proc_index].kind == ID_PROCEDURE)
 			{
+				int expected_params = table[proc_index].param_count;
+				printf("expected_params %d", expected_params);
+				int actual_params = 0;
+				int actual_param_types[MAXIDLEN];
+
+				getsym();
+				if (sym == SYM_LPAREN)
+				{
+					getsym();
+					while (sym != SYM_RPAREN && sym != SYM_NULL)
+					{
+						expression(fsys);
+						if (actual_params < expected_params)
+						{
+							int param_type = table[proc_index].param_types[actual_params];
+							if (param_type == PARAM_CONSTANT)
+							{
+								// 假设表达式已经将常量值推入栈中，直接使用
+								// 不需要额外指令，因为LIT已被生成
+								// 如果需要区分，可以在表达式解析时标记类型
+							}
+							else if (param_type == PARAM_VARIABLE)
+							{
+								// 需要加载变量值
+								// 假设变量的地址已知，通过LOD加载
+								// 这里假设实参是标识符，则可以使用LOD
+								// 具体实现视`expression()`函数如何处理
+								// 如果`expression()`已将值推入栈中，则无需额外操作
+							}
+							// 如果有更多类型，按需处理
+						}
+						if (table[proc_index].param_types[actual_params] == PARAM_CONSTANT && sym == SYM_IDENTIFIER) {
+							error(35); // 常量参数不能传递变量
+						}
+						// expression(fsys); // 将实参表达式的值压入栈中
+						actual_params++;
+						if (sym == SYM_COMMA)
+						{
+							getsym();
+						}
+						else
+						{
+							break;
+						}
+					}
+					if (sym == SYM_RPAREN || sym == SYM_SEMICOLON)
+					{
+						getsym();
+					}
+					else
+					{
+						printf("bug3, %d", sym);
+						error(5); // 缺少')'
+					}
+				}
+
+				// 参数个数检查
+				if (actual_params > expected_params)
+				{
+					printf("actual_params %d", actual_params);
+					printf("expected_params %d", expected_params);
+					error(34); // 参数个数不匹配
+				}
+				for (int i = 0; i < actual_params; i++)
+				{
+					int param_type = table[proc_index].param_types[i];
+					if (param_type == PARAM_CONSTANT)
+					{
+						// 假设常量已通过LIT指令推入栈中，无需额外操作
+					}
+					else if (param_type == PARAM_VARIABLE)
+					{
+						// 传递变量值，生成LOD指令加载变量值
+						// 假设变量的层次差和地址已记录
+						mask* mk = (mask*)&table[proc_index];
+						gen(LOD, level - mk->level, mk->address + i); // 根据具体实现调整地址
+					}
+					// 根据需要添加更多类型的处理
+				}
 				mask* mk;
-				mk = (mask*) &table[i];
+				mk = (mask*) &table[proc_index];
 				gen(CAL, level - mk->level, mk->address);
 			}
 			else
@@ -976,6 +1075,7 @@ void block(symset fsys)
 		error(32); // There are too many levels.
 	}
 	do { // while (inset(sym, declbegsys))
+		printf("\n\nsym_type\n, %d", sym);
 		if (sym == SYM_CONST) { 
             // constant declarations
 			getsym();
@@ -998,6 +1098,7 @@ void block(symset fsys)
 		if (sym == SYM_VAR) { 
             // variable declarations
 			getsym();
+			printf("SVM_VAR\n");
 			do {
 				vardeclaration();
 				while (sym == SYM_COMMA) {
@@ -1019,26 +1120,100 @@ void block(symset fsys)
 		block_data_alloc_index = data_alloc_index; 
         // save data_alloc_index before handling procedure call!
 		while (sym == SYM_PROCEDURE) { 
+			int procedure_index = -1;
             // procedure declarations
 			getsym();
+			printf("find procedure");
 			if (sym == SYM_IDENTIFIER) {
 				enter(ID_PROCEDURE);
+				procedure_index = table_index;
+				printf("procedure_index %d\n", procedure_index);
+				table[procedure_index].param_count = 0;
 				getsym();
 			}
 			else {
 				error(4); 
                 // There must be an identifier to follow 'const', 'var', or 'procedure'.
 			}
+			printf("find identifier");
+			if (sym == SYM_LPAREN)
+			{
+				printf("find (");
+				getsym();
+				int param_num = 0;
+				while (sym == SYM_CONST || sym == SYM_VAR)
+				{
+					int param_type;
+
+					// 确定参数类型
+					if (sym == SYM_CONST)
+					{
+						param_type = PARAM_CONSTANT;
+						printf("is constant");
+					}
+					else if (sym == SYM_VAR)
+					{
+						param_type = PARAM_VARIABLE;
+						printf("is var");
+					}
+
+					// char param_id[MAXIDLEN + 1];
+					// strcpy(param_id, id);
+					getsym();
+
+					// 假设参数类型默认为变量
+					if (sym == SYM_IDENTIFIER)
+					{
+						printf("table_index %d ", table_index);
+						table[procedure_index].param_types[param_num] = param_type;
+						// table[table_index].address = 3 + param_num;
+						enter(param_type == PARAM_CONSTANT ? ID_CONSTANT : ID_VARIABLE);
+						printf("table_index %d ", table_index);
+						param_num++;
+						table[procedure_index].param_count++;
+						getsym();
+					}
+					else
+					{
+						error(4);
+					}
+					// table[table_index].param_types[param_num++] = PARAM_VARIABLE;
+
+
+					if (sym == SYM_COMMA)
+					{
+						getsym();
+					}
+					else
+					{
+						break;
+					}
+				}
+				if (sym == SYM_RPAREN)
+				{
+					getsym();
+				}
+				else
+				{
+					printf("bug5");
+					error(5); // 缺少','或')'
+				}
+				// printf("sore param_count %d", param_num);
+				// printf("table_index %d ", table_index);	
+				// table[table_index].param_count = param_num;
+			}		
 			if (sym == SYM_SEMICOLON) {
 				getsym();
 			}
 			else {
+				printf("bug1");
 				error(5); // Missing ',' or ';'.
 			}
 			level++;
-			saved_table_index = table_index;
+			saved_table_index = table_index	;
 			set1 = createset(SYM_SEMICOLON, SYM_NULL);
 			set = uniteset(set1, fsys);
+			printf("start recurson");
 			block(set);
 			destroyset(set1);
 			destroyset(set);
@@ -1053,6 +1228,7 @@ void block(symset fsys)
 				destroyset(set);
 			}
 			else {
+				printf("bug2");
 				error(5); // Missing ',' or ';'.
 			}
 		}
@@ -1064,7 +1240,7 @@ void block(symset fsys)
 		destroyset(set1);
 		destroyset(set);
 	} while (inset(sym, declbegsys));
-
+	printf("\n\nout of block loop\n\n");
 	code[mk->address].addr = curr_ins;
 	mk->address = curr_ins;
 	cx0 = curr_ins;

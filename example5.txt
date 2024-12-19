@@ -1,0 +1,12 @@
+var a, b;
+
+procedure func(var p, var q);
+begin
+  p := p + q;
+end;
+
+begin
+  a := 5;
+  b := 3;
+  call func(a, b);
+end.
