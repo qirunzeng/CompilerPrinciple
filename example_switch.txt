@@ -1,0 +1,8 @@
+var i,j;
+begin
+  i := 1;
+  j := 1;
+  switch i 
+    case 1 then j:=2,
+    case 0 then j:=4;
+end.

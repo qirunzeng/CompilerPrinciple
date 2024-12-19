@@ -40,7 +40,7 @@ const char *err_msg[] = {
 	/* 32 */ "There are too many levels."
 			 /* 34 */ "Big ARRAY ERROR"};
 
-int length; // 用于存数组长�?
+int length; // 用于存数组长�??
 Array *arraylist;
 char ch;			   // last character read
 int sym;			   // last symbol read
@@ -56,7 +56,7 @@ int level;
 int table_index;	  // table index
 int data_alloc_index; // data allocation index
 char line[80];
-int for_update_flag = 1; // 用来帮助把更新语句加在最后
+int for_update_flag = 1; // 用来帮助把更新语句加在最�?
 instruction code[CXMAX];
 instruction update_code[CXMAX];
 int update_ins = 0;
@@ -65,11 +65,11 @@ const char *word[NRW + 1] = {
 	"", /* place holder */
 	"begin", "call", "const", "do", "end", "if",
 	"odd", "procedure", "then", "var", "while",
-	"elif", "else", "exit", "for", "return"};
+	"elif", "else", "exit", "for", "return","switch","case"};
 
 const int wsym[NRW + 1] = {
 	SYM_NULL, SYM_BEGIN, SYM_CALL, SYM_CONST, SYM_DO, SYM_END,
-	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE, SYM_ELIF, SYM_ELSE, SYM_EXIT, SYM_FOR, SYM_RETURN};
+	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE, SYM_ELIF, SYM_ELSE, SYM_EXIT, SYM_FOR,SYM_RETURN,SYM_SWITCH,SYM_CASE,};
 
 const int ssym[NSYM + 1] = {
 	SYM_NULL, SYM_PLUS, SYM_MINUS, SYM_TIMES, SYM_SLASH,
@@ -79,7 +79,7 @@ char csym[NSYM + 1] = {
 	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'};
 
 const char *mnemonic[MAXINS] = {
-	// 指令助记�?
+	// 指令助记�??
 	"LIT", // Load constant value to stack top
 	"OPR", // Arithmetic operation
 	"LOD", // Load value to stack top from stack
@@ -87,7 +87,7 @@ const char *mnemonic[MAXINS] = {
 	"CAL", // Call procedure
 	"INT", // Increment t-register
 	"JMP", // Jump
-	"JPC"  // Jump conditional
+	"JPC"  // Jump conditional(top=0)
 };
 
 comtab table[TABLE_INDEX_MAX]; // symbol table
@@ -95,7 +95,7 @@ FILE *infile;
 // List相关操作用于实现数组
 Array *createlist(void)
 {
-	// 使用 malloc 分配内存来创建链表节�?
+	// 使用 malloc 分配内存来创建链表节�??
 	Array *head = (Array *)malloc(sizeof(Array));
 
 	if (head == NULL)
@@ -104,14 +104,14 @@ Array *createlist(void)
 		return NULL;
 	}
 
-	// 初始化结构体的各个成�?
-	head->id[0] = '\0'; // 字符�? id 初始化为空字符串
+	// 初始化结构体的各个成�??
+	head->id[0] = '\0'; // 字符�?? id 初始化为空字符串
 	head->dim = 0;		// 数组维度初始化为 0
 	for (int i = 0; i < MAXARRAYDIM; i++)
 	{
-		head->dim_number[i] = 0; // 每个维度的大小初始化�? 0
+		head->dim_number[i] = 0; // 每个维度的大小初始化�?? 0
 	}
-	head->next = NULL; // 链表中的下一个节点初始化�? NULL
+	head->next = NULL; // 链表中的下一个节点初始化�?? NULL
 
 	return head;
 }
@@ -181,7 +181,7 @@ void error(const int n)
 
 void getch()
 {
-	// 读取一个字符，并存�? ch �?
+	// 读取一个字符，并存�?? ch �??
 	if (char_cnt == line_length)
 	{
 		if (feof(infile))
@@ -256,7 +256,7 @@ void getsym(void)
 	}
 	if (isalpha(ch))
 	{				// symbol is a reserved word or an identifier.
-		length = 0; // 清零上次的数组长�?
+		length = 0; // 清零上次的数组长�??
 		k = 0;
 		do
 		{
@@ -274,7 +274,7 @@ void getsym(void)
 			sym = wsym[i]; // symbol is a reserved word
 		else
 		{
-			length = 0;	 // 清零上次的数组长�?
+			length = 0;	 // 清零上次的数组长�??
 			int dim = 0; // 用于记录当前是第几个维度，最前面为第一维度
 			int dim_number[MAXARRAYDIM];
 			if (ch == '[')
@@ -287,7 +287,7 @@ void getsym(void)
 					{
 						len[i] = '\0';
 					}
-					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变�?
+					int help_cacu_len = 0; // 用来计算数组长度的字符串数组的辅助变�??
 					while (ch != ']')
 					{
 						if (help_cacu_len <= MAXARRAYLEN)
@@ -312,7 +312,7 @@ void getsym(void)
 					newnode->dim = dim;
 					for (int i = 0; i < dim; i++)
 					{
-						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化�? 0
+						newnode->dim_number[i] = dim_number[i]; // 每个维度的大小初始化�?? 0
 					}
 					Array *p = findtail(arraylist);
 					p->next = newnode;
@@ -469,7 +469,7 @@ void gen(int x, int y, int z)
 		code[curr_ins].func_code = x;
 		code[curr_ins].level = y;
 		code[curr_ins].addr = z;
-		curr_ins++; // 下一条指令
+		curr_ins++; // 下一条指�?
 	}
 	else
 	{
@@ -1050,7 +1050,7 @@ void statement(symset fsys)
 	}
 	else if (sym == SYM_EXIT)
 	{
-		gen(OPR, 0, OPR_EXIT); // 退出当前程序执�?
+		gen(OPR, 0, OPR_EXIT); // 退出当前程序执�??
 		getsym();
 	}
 	else if (sym == SYM_RETURN)
@@ -1058,10 +1058,10 @@ void statement(symset fsys)
 		getsym();
 		if (sym != SYM_SEMICOLON || sym == SYM_COMMA)
 		{
-			expression(fsys); // 计算返回�?
+			expression(fsys); // 计算返回�??
 			gen(STO, 0, 0);	  // 将结果存入返回地址
 		}
-		gen(OPR, 0, OPR_RET); // 退出当前过�?
+		gen(OPR, 0, OPR_RET); // 退出当前过�??
 		getsym();
 	}
 	else if (sym == SYM_FOR)
@@ -1070,7 +1070,7 @@ void statement(symset fsys)
 		if (sym == SYM_LPAREN)
 		{
 			getsym();
-			statement(fsys); // 初始化语�?
+			statement(fsys); // 初始化语�??
 			int cx1 = curr_ins;
 			getsym();
 			condition(fsys); // 条件判断
@@ -1103,7 +1103,7 @@ void statement(symset fsys)
 				code[curr_ins].func_code = update_code[i].func_code;
 				code[curr_ins].level = update_code[i].level;
 				code[curr_ins].addr = update_code[i].addr;
-				curr_ins++; // 下一条指令
+				curr_ins++; // 下一条指�?
 			}
 			update_ins=0;
 			gen(JMP, 0, cx1);		   // 跳回条件语句
@@ -1114,12 +1114,96 @@ void statement(symset fsys)
 			error(22); // '(' expected
 		}
 	}
+	else if (sym == SYM_SWITCH)
+	{ // if statement
+		getsym();
+		int i = 0;
+		int if_position[MAXIF];
+		for (int k = 0; k < MAXIF; k++)
+		{
+			if_position[k] = 0;
+		}
+		set1 = createset(SYM_THEN, SYM_DO, SYM_SEMICOLON, SYM_COMMA, SYM_ELIF, SYM_ELSE, SYM_NULL);
+		set = uniteset(set1, fsys);
+		condition(set);
+		destroyset(set1);
+		destroyset(set);
+		while (sym == SYM_CASE)
+		{
+			getsym();
+			if ((++i) > MAXIF)
+			{
+				error(67); // Too many elifs.
+				--i;
+				break;
+			}
+			set1 = createset(SYM_THEN, SYM_DO, SYM_SEMICOLON, SYM_COMMA, SYM_ELIF, SYM_ELSE, SYM_NULL);
+			set = uniteset(set1, fsys);
+			condition(set);
+			destroyset(set1);
+			destroyset(set);
+			if (sym == SYM_THEN)
+			{
+				getsym();
+			}
+			else
+			{
+				error(16); // 'then' expected.
+			}
+			gen(OPR,0,OPR_EQU);
+            cx1 = curr_ins;
+			gen(JPC, 0, 0);
+			statement(fsys);
+			if_position[i] = curr_ins;
+			gen(JMP,0,0);
+			code[cx1].addr = curr_ins;
+			if (sym == SYM_COMMA)
+			{
+				gen(OPR,0,OPR_DEV);
+				getsym();
+			}
+			else if (sym == SYM_CASE)
+			{
+				error(26); // Missing ';'.
+			}
+			else
+				break;
+		}
+		int help_complete_if = 0; // 为了回填之前的JPC
+		while (if_position[help_complete_if] != 0)
+		{
+			code[if_position[help_complete_if]].addr = curr_ins;
+			help_complete_if++;
+		}
+	}
+	else if (sym == SYM_DO)
+	{ // while statement
+		cx1 = curr_ins;
+		getsym();
+		statement(fsys);
+		getsym();
+		if (sym == SYM_WHILE)
+		{
+			getsym();
+		}
+		else
+		{
+			error(18); // 'do' expected.(while报错符号待修改)
+		}
+		set1 = createset(SYM_WHILE,SYM_DO, SYM_NULL);
+		set = uniteset(set1, fsys);
+		condition(set);
+		destroyset(set1);
+		destroyset(set);
+		gen(OPR,0,OPR_NOT);
+		gen(JPC,0,cx1);
+	}
 	test(fsys, phi, 19);
 } // statement
 
 //////////////////////////////////////////////////////////////////////
 /**
- * @brief 处理块，包括常量声明、变量声明、过程声明、语�?
+ * @brief 处理块，包括常量声明、变量声明、过程声明、语�??
  */
 void block(symset fsys)
 {
@@ -1178,7 +1262,7 @@ void block(symset fsys)
 				}
 				if (sym == SYM_SEMICOLON || sym == SYM_COMMA)
 				{
-					// 表示变量声明结束，应该进行下一�?
+					// 表示变量声明结束，应该进行下一�??
 					getsym();
 					break;
 				}
@@ -1300,7 +1384,7 @@ void interpret()
 				top = b - 1;
 				pc = stack[top + 3];
 				b = stack[top + 2];
-				stack[top] = stack[top + 4]; // 保存返回�?
+				stack[top] = stack[top + 4]; // 保存返回�??
 				break;
 			case OPR_NEG:
 				stack[top] = -stack[top];
@@ -1397,6 +1481,13 @@ void interpret()
 			case OPR_EXIT:
 				flag = 1;
 				break;
+			case OPR_DEV://让栈降低
+			     top--;
+	        case OPR_JPN://为1时跳转
+			if (stack[top] == 0)
+				pc = i.addr;
+			top--;
+			break;
 			} // switch
 			break;
 		case LOD:
@@ -1511,7 +1602,7 @@ void interpret()
 // 	' ', '+', '-', '*', '/', '(', ')', '=', ',', '.', ';', '&', '|', '!'
 // };
 
-// const char* mnemonic[MAXINS] = { // 指令助记�?
+// const char* mnemonic[MAXINS] = { // 指令助记�??
 // 	"LIT", // Load constant value to stack top
 //     "OPR", // Arithmetic operation
 //     "LOD", // Load value to stack top from stack
@@ -1538,7 +1629,7 @@ void interpret()
 // } // error
 
 // void getch() {
-//     // 读取一个字符，并存�? ch �?
+//     // 读取一个字符，并存�?? ch �??
 // 	if (char_cnt == line_length) {
 // 		if (feof(infile)) {
 // 			printf("\nPROGRAM INCOMPLETE\n");
@@ -1756,7 +1847,7 @@ void interpret()
 // 	code[curr_ins].func_code = x;
 // 	code[curr_ins].level = y;
 // 	code[curr_ins].addr = z;
-//     curr_ins++; // 下一条指�?
+//     curr_ins++; // 下一条指�??
 // } // gen
 
 // // tests if error occurs and skips all symbols that do not belongs to s1 or s2.
@@ -2171,7 +2262,7 @@ void interpret()
 
 // //////////////////////////////////////////////////////////////////////
 // /**
-//  * @brief 处理块，包括常量声明、变量声明、过程声明、语�?
+//  * @brief 处理块，包括常量声明、变量声明、过程声明、语�??
 //  */
 // void block(symset fsys)
 // {
@@ -2219,7 +2310,7 @@ void interpret()
 // 					vardeclaration();
 // 				}
 // 				if (sym == SYM_SEMICOLON) {
-//                     // 表示变量声明结束，应该进行下一�?
+//                     // 表示变量声明结束，应该进行下一�??
 // 					getsym();
 //                     break;
 // 				}

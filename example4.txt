@@ -4,6 +4,6 @@ begin
   j := !i;
   l := !(i&&j);
   k := (i+j)&&l;
+  exit;
   m := (j&&l) + 2;
-  exit
 end.

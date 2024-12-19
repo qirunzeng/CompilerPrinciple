@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "set.h"
 
-#define NRW        16     // number of reserved words
+#define NRW        18     // number of reserved words
 #define TABLE_INDEX_MAX      500    // length of identifier table
 #define MAXNUMLEN  14     // maximum number of digits in numbers
 #define NSYM       13     // maximum number of symbols in array ssym and csym
@@ -66,8 +66,11 @@ enum symtype {
 	SYM_ELSE,		//else
 	SYM_EXIT,		//exit
 	SYM_RETURN,		//return
-	SYM_FOR			//for
+	SYM_FOR,			//for
+    SYM_SWITCH,  //switch
+	SYM_CASE   //case
 };
+
 
 enum idtype
 {
@@ -84,7 +87,7 @@ enum oprcode
 	OPR_RET, OPR_NEG, OPR_ADD, OPR_MIN,
 	OPR_MUL, OPR_DIV, OPR_ODD, OPR_EQU,
 	OPR_NEQ, OPR_LES, OPR_LEQ, OPR_GTR,
-	OPR_GEQ, OPR_AND, OPR_OR, OPR_NOT,OPR_EXIT
+	OPR_GEQ, OPR_AND, OPR_OR, OPR_NOT,OPR_EXIT,OPR_DEV,OPR_JPN
 };
 
 
