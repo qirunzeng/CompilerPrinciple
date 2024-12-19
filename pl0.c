@@ -209,54 +209,38 @@ void getsym(void)
 	{
 		getch();
 	}
-	while (ch == '/')
-	{
+	 while (ch == '/') {
 		getch();
-		if (ch == '/')
-		{
-			while (ch != '\n')
-			{
+		if (ch == '/') {
+			while (ch != '\n' && ch != '\r') {
 				getch();
 			}
-			getch();
 		}
-		else if (ch == '*')
-		{
+		else if (ch == '*') {
 			getch();
-			while (ch != '*')
-			{
-				while (ch == '/')
-				{
-					getch();
-					if (ch == '*')
-					{
-						error(33);
-					}
-				}
+            int END_LOOP = 0;
+			while (1) {
 				getch();
-				if (ch == '*')
-				{
+				while (ch == '*') {
 					getch();
-					if (ch == '/')
-					{
+					if (ch == '/') {
 						getch();
+                        END_LOOP = 1;
 						break;
 					}
-					else
+					else {
 						continue;
+                    }
 				}
+                if (END_LOOP) {
+                    break;
+                }
 			}
 		}
-		while (ch == ' ' || ch == '\t' || ch == '\n')
-		{
+		while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
 			getch();
 		}
-		if (ch == '*')
-		{
-			error(33);
-		}
 	}
-
 	if (isalpha(ch))
 	{				// symbol is a reserved word or an identifier.
 		length = 0; // 清零上次的数组长�?
