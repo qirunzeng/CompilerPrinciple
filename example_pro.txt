@@ -1,14 +1,19 @@
-var a, b,c;
+var a, b,c,i;
 const d=10 ;
 procedure func(var p, var q);
 begin
   return p+q;
 end;
-
+procedure q();
+begin
+  i := i + 1;
+end;
 begin
   a := 5;
   b := 3;
-  a := func(a,d;);
+  i := 0;
+  call q();
+  a := func(a,b;);
   a := func(a, func(a,b;););
   a := 12;
 end.

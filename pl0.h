@@ -14,8 +14,8 @@
 #define NSYM       13     // maximum number of symbols in array ssym and csym
 #define MAXIDLEN   10     // length of identifiers
 #define MAXARRAYLEN 3	 // 数组一个维度的最大长度，3代表999
-#define MAXARRAYDIM 3	 // 最大数组维度，现在�?3
-#define MAXIF     100   //最大if分支�? 
+#define MAXARRAYDIM 3	 // 最大数组维度，现在�?3
+#define MAXIF     100   //最大if分支�? 
 #define MAXADDRESS 32767  // maximum address
 #define MAXLEVEL   32     // maximum depth of nesting block
 #define CXMAX      500    // size of code array
@@ -23,9 +23,9 @@
 #define MAXSYM     30     // maximum number of symbols  
 
 #define STACKSIZE  1000   // maximum storage
-#define PARAM_NUMBER 10//最多参数个�?
-#define PARAM_CONSTANT 1   //参数类型
-#define PARAM_VARIABLE 2
+#define PARAM_NUMBER 10//最多参数个�?
+#define PARAM_CONSTANT 0   //参数类型
+#define PARAM_VARIABLE 1
 #define PARAM_ARRAY    3
 /**
  * 符号
@@ -33,7 +33,7 @@
 enum symtype {
 	SYM_NULL,       // 
 	SYM_ARRAY,
-	SYM_IDENTIFIER, // 标识�?
+	SYM_IDENTIFIER, // 标识�?
 	SYM_NUMBER,     // 数字
 	SYM_PLUS,       // +
 	SYM_MINUS,      // -
@@ -125,18 +125,18 @@ typedef struct Array
 	struct Array *next;
 } Array;
 extern char line[80];
-extern int length ;		   // 用于存数组长�?
+extern int length ;		   // 用于存数组长�?
 extern Array*arraylist;
 extern instruction code[CXMAX];
 
 /**
- * 关键�?
+ * 关键�?
  */
 extern const char* word[NRW + 1];
 
 
 /**
- * 关键�?
+ * 关键�?
  */
 extern const int wsym[NRW + 1];
 
@@ -161,7 +161,7 @@ typedef struct
 extern comtab table[TABLE_INDEX_MAX];    // symbol table
 
 /**
- * 符号�?
+ * 符号�?
  */
 typedef struct {
 	char name[MAXIDLEN + 1];
@@ -230,7 +230,7 @@ void interpret();
 //  */
 // enum symtype {
 // 	SYM_NULL,       // 
-// 	SYM_IDENTIFIER, // 标识�?
+// 	SYM_IDENTIFIER, // 标识�?
 // 	SYM_NUMBER,     // 数字
 // 	SYM_PLUS,       // +
 // 	SYM_MINUS,      // -
@@ -312,13 +312,13 @@ void interpret();
 // extern instruction code[CXMAX];
 
 // /**
-//  * 关键�?
+//  * 关键�?
 //  */
 // extern const char* word[NRW + 1];
 
 
 // /**
-//  * 关键�?
+//  * 关键�?
 //  */
 // extern const int wsym[NRW + 1];
 
@@ -338,7 +338,7 @@ void interpret();
 // extern comtab table[TABLE_INDEX_MAX];    // symbol table
 
 // /**
-//  * 符号�?
+//  * 符号�?
 //  */
 // typedef struct {
 // 	char  name[MAXIDLEN + 1];

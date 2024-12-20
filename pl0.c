@@ -717,6 +717,11 @@ void factor(symset fsys)
 									if (actual_params < expected_params)
 									{
 										int param_type = table[proc_index].param_types[actual_params];
+										int id_index = position(id);
+										if (table[id_index].kind != param_type && table[id_index].kind != SYM_PROCEDURE)
+										{
+											error(35);
+										}
 									}
 									if (table[proc_index].param_types[actual_params] == PARAM_CONSTANT && sym == SYM_IDENTIFIER)
 									{
@@ -778,7 +783,7 @@ void factor(symset fsys)
 						{
 							error(15); // A constant or variable can not be called.
 						}
-						if (sym != SYM_SEMICOLON&&sym!=SYM_RPAREN)
+						if (sym != SYM_SEMICOLON && sym != SYM_RPAREN)
 							getsym();
 					}
 					break;
@@ -1048,6 +1053,11 @@ void statement(symset fsys)
 						if (actual_params < expected_params)
 						{
 							int param_type = table[proc_index].param_types[actual_params];
+							int id_index = position(id);
+							if (table[id_index].kind != param_type && table[id_index].kind != SYM_PROCEDURE)
+							{
+								error(35);
+							}
 						}
 						if (table[proc_index].param_types[actual_params] == PARAM_CONSTANT && sym == SYM_IDENTIFIER)
 						{
@@ -1661,7 +1671,7 @@ void interpret()
 			switch (i.addr) // operator
 			{
 			case OPR_RET:
-				temp_value=stack[top];
+				temp_value = stack[top];
 				top = b - 1;
 				pc = stack[top + 3];
 				b = stack[top + 2];
