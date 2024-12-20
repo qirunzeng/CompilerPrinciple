@@ -1,5 +1,5 @@
 var a, b,c;
-
+const d=10 ;
 procedure func(var p, var q);
 begin
   return p+q;
@@ -8,7 +8,7 @@ end;
 begin
   a := 5;
   b := 3;
-  a := func(a,b;);
+  a := func(a,d;);
   a := func(a, func(a,b;););
   a := 12;
 end.
