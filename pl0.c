@@ -778,7 +778,7 @@ void factor(symset fsys)
 						{
 							error(15); // A constant or variable can not be called.
 						}
-						if (sym != SYM_SEMICOLON)
+						if (sym != SYM_SEMICOLON&&sym!=SYM_RPAREN)
 							getsym();
 					}
 					break;
@@ -1643,6 +1643,8 @@ void interpret()
 
 	printf("Begin executing PL/0 program.\n");
 	int flag = 0; // flag用来确保没有exit
+	int temp_top;
+	int temp_value;
 	pc = 0;
 	b = 1;
 	top = 3;
@@ -1659,10 +1661,12 @@ void interpret()
 			switch (i.addr) // operator
 			{
 			case OPR_RET:
+				temp_value=stack[top];
 				top = b - 1;
 				pc = stack[top + 3];
 				b = stack[top + 2];
-				stack[top] = stack[top + 4]; // 保存返回�??
+				top++;
+				stack[top] = temp_value; // 保存返回�??
 				break;
 			case OPR_NEG:
 				stack[top] = -stack[top];

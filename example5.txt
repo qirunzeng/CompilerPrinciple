@@ -9,5 +9,7 @@ end;
 begin
   a := 5;
   b := 3;
-  a := func(a, b;);
+  a := func(a,b;);
+  a := func(a, func(a,b;););
+  a := 12;
 end.
