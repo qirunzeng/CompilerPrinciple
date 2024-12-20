@@ -1,4 +1,5 @@
-#include "pl0.h"
+#include "pl0.c"
+#include "set.c"
 int main()
 {
 	printf("start start");

@@ -3,10 +3,11 @@ var a, b,c;
 procedure func(var p, var q);
 begin
   c := p + q;
+  return c;
 end;
 
 begin
   a := 5;
   b := 3;
-  call func(a, b;);
+  a := func(a, b;);
 end.

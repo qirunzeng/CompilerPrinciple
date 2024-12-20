@@ -111,7 +111,7 @@ const char *mnemonic[MAXINS] = {
 	"CAL", // Call procedure
 	"INT", // Increment t-register
 	"JMP", // Jump
-	"JPC",  // Jump conditional(top=0)
+	"JPC", // Jump conditional(top=0)
 	"NSTO" // 无输出赋值
 };
 
@@ -692,7 +692,95 @@ void factor(symset fsys)
 					gen(LOD, level - mk->level, mk->address);
 					break;
 				case ID_PROCEDURE:
-					error(21); // Procedure identifier can not be in an expression.
+					if (sym == SYM_IDENTIFIER)
+					{
+						int proc_index = position(id);
+						// printf("position_id %d", proc_index);
+						if (proc_index == 0)
+						{
+							error(11); // Undeclared identifier.
+						}
+						else if (table[proc_index].kind == ID_PROCEDURE)
+						{
+							int expected_params = table[proc_index].param_count;
+							// printf("expected_params %d", expected_params);
+							int actual_params = 0;
+							int actual_param_types[MAXIDLEN];
+
+							getsym();
+							if (sym == SYM_LPAREN)
+							{
+								getsym();
+								while (sym != SYM_RPAREN && sym != SYM_NULL)
+								{
+									expression(fsys);
+									if (actual_params < expected_params)
+									{
+										int param_type = table[proc_index].param_types[actual_params];
+									}
+									if (table[proc_index].param_types[actual_params] == PARAM_CONSTANT && sym == SYM_IDENTIFIER)
+									{
+										error(35); // 常量参数不能传递变量
+									}
+									// expression(fsys); // 将实参表达式的值压入栈中
+									actual_params++;
+									if (sym == SYM_COMMA)
+									{
+										getsym();
+									}
+									else
+									{
+										break;
+									}
+								}
+								if (sym == SYM_RPAREN || sym == SYM_SEMICOLON)
+								{
+									getsym();
+								}
+								else
+								{
+									// printf("bug3, %d", sym);
+									error(5); // 缺少')'
+								}
+							}
+
+							// 参数个数检查
+							if (actual_params > expected_params)
+							{
+								// printf("actual_params %d", actual_params);
+								// printf("expected_params %d", expected_params);
+								error(34); // 参数个数不匹配
+							}
+							int wait_para[PARAM_NUMBER];
+							for (int i = 0; i < PARAM_NUMBER; i++)
+								wait_para[i] = 0;
+							for (int i = 0; i < actual_params; i++)
+							{
+								int param_type = table[proc_index].param_types[i];
+								if (param_type == PARAM_CONSTANT)
+								{
+								}
+								else if (param_type == PARAM_VARIABLE)
+								{
+									mask *mk = (mask *)&table[proc_index];
+									wait_para[i] = table[proc_index].param_addr[i];
+								}
+							}
+							for (int i = PARAM_NUMBER - 1; i >= 0; i--)
+								if (wait_para[i] != 0)
+									gen(NSTO, level - table[proc_index].level, wait_para[i]);
+							mask *mk;
+							mk = (mask *)&table[proc_index];
+
+							gen(CAL, level - table[proc_index].level, table[proc_index].address);
+						}
+						else
+						{
+							error(15); // A constant or variable can not be called.
+						}
+						if (sym != SYM_SEMICOLON)
+							getsym();
+					}
 					break;
 				} // switch
 			}
@@ -793,7 +881,6 @@ void expression(symset fsys)
 {
 	int addop;
 	symset set;
-
 	set = uniteset(fsys, createset(SYM_PLUS, SYM_MINUS, SYM_OR, // odd
 								   SYM_EQU,						// =
 								   SYM_NEQ,						// <>
@@ -1172,10 +1259,9 @@ void statement(symset fsys)
 		if (sym != SYM_SEMICOLON || sym == SYM_COMMA)
 		{
 			expression(fsys); // 计算返回�??
-			gen(STO, 0, 0);	  // 将结果存入返回地址
 		}
-		gen(OPR, 0, OPR_RET); // 退出当前过�??
-		getsym();
+		if (sym != SYM_SEMICOLON)
+			getsym();
 	}
 	else if (sym == SYM_FOR)
 	{
