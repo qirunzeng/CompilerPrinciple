@@ -4,45 +4,43 @@
 
 #include "pl0.h"
 
-
-const char* err_msg[] = {
-/*  0 */    "",
-/*  1 */    "Found ':=' when expecting '='.",
-/*  2 */    "There must be a number to follow '='.",
-/*  3 */    "There must be an '=' to follow the identifier.",
-/*  4 */    "There must be an identifier to follow 'const', 'var', or 'procedure'.",
-/*  5 */    "Missing ',' or ';'.",
-/*  6 */    "Incorrect procedure name.",
-/*  7 */    "Statement expected.",
-/*  8 */    "Follow the statement is an incorrect symbol.",
-/*  9 */    "'.' expected.",
-/* 10 */    "';' expected.",
-/* 11 */    "Undeclared identifier.",
-/* 12 */    "Illegal assignment.",
-/* 13 */    "':=' expected.",
-/* 14 */    "There must be an identifier to follow the 'call'.",
-/* 15 */    "A constant or variable can not be called.",
-/* 16 */    "'then' expected.",
-/* 17 */    "';' or 'end' expected.",
-/* 18 */    "'do' expected.",
-/* 19 */    "Incorrect symbol.",
-/* 20 */    "Relative operators expected.",
-/* 21 */    "Procedure identifier can not be in an expression.",
-/* 22 */    "Missing ')'.",
-/* 23 */    "The symbol can not be followed by a factor.",
-/* 24 */    "The symbol can not be as the beginning of an expression.",
-/* 25 */    "The number is too great.",
-/* 26 */    "",
-/* 27 */    "",
-/* 28 */    "",
-/* 29 */    "",
-/* 30 */    "",
-/* 31 */    "",
-/* 32 */    "There are too many levels.",
-/* 33 */    "Big ARRAY ERROR",
-/* 34 */    "Parameter count mismatch.",
-/* 35 */    "Parameter type mismatch."
-};
+const char *err_msg[] = {
+	/*  0 */ "",
+	/*  1 */ "Found ':=' when expecting '='.",
+	/*  2 */ "There must be a number to follow '='.",
+	/*  3 */ "There must be an '=' to follow the identifier.",
+	/*  4 */ "There must be an identifier to follow 'const', 'var', or 'procedure'.",
+	/*  5 */ "Missing ',' or ';'.",
+	/*  6 */ "Incorrect procedure name.",
+	/*  7 */ "Statement expected.",
+	/*  8 */ "Follow the statement is an incorrect symbol.",
+	/*  9 */ "'.' expected.",
+	/* 10 */ "';' expected.",
+	/* 11 */ "Undeclared identifier.",
+	/* 12 */ "Illegal assignment.",
+	/* 13 */ "':=' expected.",
+	/* 14 */ "There must be an identifier to follow the 'call'.",
+	/* 15 */ "A constant or variable can not be called.",
+	/* 16 */ "'then' expected.",
+	/* 17 */ "';' or 'end' expected.",
+	/* 18 */ "'do' expected.",
+	/* 19 */ "Incorrect symbol.",
+	/* 20 */ "Relative operators expected.",
+	/* 21 */ "Procedure identifier can not be in an expression.",
+	/* 22 */ "Missing ')'.",
+	/* 23 */ "The symbol can not be followed by a factor.",
+	/* 24 */ "The symbol can not be as the beginning of an expression.",
+	/* 25 */ "The number is too great.",
+	/* 26 */ "",
+	/* 27 */ "",
+	/* 28 */ "",
+	/* 29 */ "",
+	/* 30 */ "",
+	/* 31 */ "",
+	/* 32 */ "There are too many levels.",
+	/* 33 */ "Big ARRAY ERROR",
+	/* 34 */ "Parameter count mismatch.",
+	/* 35 */ "Parameter type mismatch."};
 
 int length; // 用于存数组长�??
 Array *arraylist;
@@ -61,6 +59,10 @@ int table_index;	  // table index
 int data_alloc_index; // data allocation index
 char line[80];
 int for_update_flag = 1; // 用来帮助把更新语句加在最�?
+int procedure_index;
+int procedure_flag = 0;
+int procedure_flag1 = 0;
+int param_num; // 现在遍历到第几个参数
 instruction code[CXMAX];
 instruction update_code[CXMAX];
 int update_ins = 0;
@@ -69,11 +71,29 @@ const char *word[NRW + 1] = {
 	"", /* place holder */
 	"begin", "call", "const", "do", "end", "if",
 	"odd", "procedure", "then", "var", "while",
-	"elif", "else", "exit", "for", "return","switch","case"};
+	"elif", "else", "exit", "for", "return", "switch", "case"};
 
 const int wsym[NRW + 1] = {
-	SYM_NULL, SYM_BEGIN, SYM_CALL, SYM_CONST, SYM_DO, SYM_END,
-	SYM_IF, SYM_ODD, SYM_PROCEDURE, SYM_THEN, SYM_VAR, SYM_WHILE, SYM_ELIF, SYM_ELSE, SYM_EXIT, SYM_FOR,SYM_RETURN,SYM_SWITCH,SYM_CASE,};
+	SYM_NULL,
+	SYM_BEGIN,
+	SYM_CALL,
+	SYM_CONST,
+	SYM_DO,
+	SYM_END,
+	SYM_IF,
+	SYM_ODD,
+	SYM_PROCEDURE,
+	SYM_THEN,
+	SYM_VAR,
+	SYM_WHILE,
+	SYM_ELIF,
+	SYM_ELSE,
+	SYM_EXIT,
+	SYM_FOR,
+	SYM_RETURN,
+	SYM_SWITCH,
+	SYM_CASE,
+};
 
 const int ssym[NSYM + 1] = {
 	SYM_NULL, SYM_PLUS, SYM_MINUS, SYM_TIMES, SYM_SLASH,
@@ -91,7 +111,8 @@ const char *mnemonic[MAXINS] = {
 	"CAL", // Call procedure
 	"INT", // Increment t-register
 	"JMP", // Jump
-	"JPC"  // Jump conditional(top=0)
+	"JPC",  // Jump conditional(top=0)
+	"NSTO" // 无输出赋值
 };
 
 comtab table[TABLE_INDEX_MAX]; // symbol table
@@ -506,6 +527,8 @@ void enter(int kind)
 	table_index++;
 	strcpy(table[table_index].name, id);
 	table[table_index].kind = kind;
+	for (int temp = 0; temp < PARAM_NUMBER; temp++)
+		table[table_index].param_addr[temp] = 0;
 	if (length == 0)
 	{
 		switch (kind)
@@ -519,7 +542,7 @@ void enter(int kind)
 			table[table_index].value = num;
 			break;
 		case ID_VARIABLE:
-			if (table[table_index].param_count == 0)
+			if (!procedure_flag && !procedure_flag1)
 			{
 				mk = (mask *)&table[table_index];
 				mk->level = level;
@@ -528,16 +551,18 @@ void enter(int kind)
 			}
 			else
 			{
-				mk = (mask*)&table[table_index];
+				mk = (mask *)&table[table_index];
 				mk->level = level;
 				mk->address = data_alloc_index++;
+				table[procedure_index].param_addr[param_num] = mk->address;
 				// mk->address = 3 + table[table_index].param_count;
 				break;
 			}
-			
+
 		case ID_PROCEDURE:
 			mk = (mask *)&table[table_index];
 			mk->level = level;
+			mk->address = curr_ins;
 			// table[table_index].param_count = 0;
 			break;
 		} // switch
@@ -937,7 +962,8 @@ void statement(symset fsys)
 						{
 							int param_type = table[proc_index].param_types[actual_params];
 						}
-						if (table[proc_index].param_types[actual_params] == PARAM_CONSTANT && sym == SYM_IDENTIFIER) {
+						if (table[proc_index].param_types[actual_params] == PARAM_CONSTANT && sym == SYM_IDENTIFIER)
+						{
 							error(35); // 常量参数不能传递变量
 						}
 						// expression(fsys); // 将实参表达式的值压入栈中
@@ -969,6 +995,9 @@ void statement(symset fsys)
 					// printf("expected_params %d", expected_params);
 					error(34); // 参数个数不匹配
 				}
+				int wait_para[PARAM_NUMBER];
+				for (int i = 0; i < PARAM_NUMBER; i++)
+					wait_para[i] = 0;
 				for (int i = 0; i < actual_params; i++)
 				{
 					int param_type = table[proc_index].param_types[i];
@@ -977,20 +1006,24 @@ void statement(symset fsys)
 					}
 					else if (param_type == PARAM_VARIABLE)
 					{
-						mask* mk = (mask*)&table[proc_index];
-						gen(LOD, level - mk->level, mk->address + i);
+						mask *mk = (mask *)&table[proc_index];
+						wait_para[i] = table[proc_index].param_addr[i];
 					}
 				}
-				mask* mk;
-				mk = (mask*) &table[proc_index];
+				for (int i = PARAM_NUMBER - 1; i >= 0; i--)
+					if (wait_para[i] != 0)
+						gen(NSTO, level - table[proc_index].level, wait_para[i]);
+				mask *mk;
+				mk = (mask *)&table[proc_index];
 
-				gen(CAL, level - mk->level, mk->address);
+				gen(CAL, level - table[proc_index].level, table[proc_index].address);
 			}
 			else
 			{
 				error(15); // A constant or variable can not be called.
 			}
-			getsym();
+			if (sym != SYM_SEMICOLON)
+				getsym();
 		}
 	}
 	else if (sym == SYM_IF)
@@ -1185,7 +1218,7 @@ void statement(symset fsys)
 				code[curr_ins].addr = update_code[i].addr;
 				curr_ins++; // 下一条指�?
 			}
-			update_ins=0;
+			update_ins = 0;
 			gen(JMP, 0, cx1);		   // 跳回条件语句
 			code[cx2].addr = curr_ins; // 结束循环
 		}
@@ -1230,16 +1263,16 @@ void statement(symset fsys)
 			{
 				error(16); // 'then' expected.
 			}
-			gen(OPR,0,OPR_EQU);
-            cx1 = curr_ins;
+			gen(OPR, 0, OPR_EQU);
+			cx1 = curr_ins;
 			gen(JPC, 0, 0);
 			statement(fsys);
 			if_position[i] = curr_ins;
-			gen(JMP,0,0);
+			gen(JMP, 0, 0);
 			code[cx1].addr = curr_ins;
 			if (sym == SYM_COMMA)
 			{
-				gen(OPR,0,OPR_DEV);
+				gen(OPR, 0, OPR_DEV);
 				getsym();
 			}
 			else if (sym == SYM_CASE)
@@ -1270,13 +1303,13 @@ void statement(symset fsys)
 		{
 			error(18); // 'do' expected.(while报错符号待修改)
 		}
-		set1 = createset(SYM_WHILE,SYM_DO, SYM_NULL);
+		set1 = createset(SYM_WHILE, SYM_DO, SYM_NULL);
 		set = uniteset(set1, fsys);
 		condition(set);
 		destroyset(set1);
 		destroyset(set);
-		gen(OPR,0,OPR_NOT);
-		gen(JPC,0,cx1);
+		gen(OPR, 0, OPR_NOT);
+		gen(JPC, 0, cx1);
 	}
 	test(fsys, phi, 19);
 } // statement
@@ -1296,7 +1329,8 @@ void block(symset fsys)
 	data_alloc_index = 3;
 	block_data_alloc_index = data_alloc_index;
 	mk = (mask *)&table[table_index];
-	mk->address = curr_ins;
+	int jmp;
+	jmp = curr_ins;
 	gen(JMP, 0, 0);
 	if (level > MAXLEVEL)
 	{
@@ -1355,14 +1389,16 @@ void block(symset fsys)
 			} while (sym == SYM_IDENTIFIER);
 		}
 
-		block_data_alloc_index = data_alloc_index; 
-        // save data_alloc_index before handling procedure call!
-		while (sym == SYM_PROCEDURE) { 
-			int procedure_index = -1;
-            // procedure declarations
+		block_data_alloc_index = data_alloc_index;
+		// save data_alloc_index before handling procedure call!
+		while (sym == SYM_PROCEDURE)
+		{
+			procedure_index = -1;
+			// procedure declarations
 			getsym();
 			// printf("find procedure");
-			if (sym == SYM_IDENTIFIER) {
+			if (sym == SYM_IDENTIFIER)
+			{
 				enter(ID_PROCEDURE);
 				procedure_index = table_index;
 				// printf("procedure_index %d\n", procedure_index);
@@ -1378,7 +1414,7 @@ void block(symset fsys)
 			{
 				// printf("find (");
 				getsym();
-				int param_num = 0;
+				param_num = 0;
 				while (sym == SYM_CONST || sym == SYM_VAR)
 				{
 					int param_type;
@@ -1402,13 +1438,15 @@ void block(symset fsys)
 					// 假设参数类型默认为变量
 					if (sym == SYM_IDENTIFIER)
 					{
+						table[procedure_index].param_count++;
 						// printf("table_index %d ", table_index);
 						table[procedure_index].param_types[param_num] = param_type;
 						// table[table_index].address = 3 + param_num;
+						procedure_flag = 1;
 						enter(param_type == PARAM_CONSTANT ? ID_CONSTANT : ID_VARIABLE);
 						// printf("table_index %d ", table_index);
+						procedure_flag = 0;
 						param_num++;
-						table[procedure_index].param_count++;
 						getsym();
 					}
 					else
@@ -1416,7 +1454,6 @@ void block(symset fsys)
 						error(4);
 					}
 					// table[table_index].param_types[param_num++] = PARAM_VARIABLE;
-
 
 					if (sym == SYM_COMMA)
 					{
@@ -1437,21 +1474,25 @@ void block(symset fsys)
 					error(5); // 缺少','或')'
 				}
 				// printf("sore param_count %d", param_num);
-				// printf("table_index %d ", table_index);	
+				// printf("table_index %d ", table_index);
 				// table[table_index].param_count = param_num;
-			}		
-			if (sym == SYM_SEMICOLON) {
+			}
+			if (sym == SYM_SEMICOLON)
+			{
 				getsym();
 			}
-			else {
+			else
+			{
 				// printf("bug1");
 				error(5); // Missing ',' or ';'.
 			}
 			level++;
-			saved_table_index = table_index	;
+			saved_table_index = table_index;
 			set1 = createset(SYM_SEMICOLON, SYM_NULL);
 			set = uniteset(set1, fsys);
+			procedure_flag1 = 1;
 			block(set);
+			procedure_flag1 = 0;
 			destroyset(set1);
 			destroyset(set);
 			table_index = saved_table_index;
@@ -1480,8 +1521,8 @@ void block(symset fsys)
 		destroyset(set);
 	} while (inset(sym, declbegsys));
 	// printf("\n\nout of block loop\n\n");
-	code[mk->address].addr = curr_ins;
-	mk->address = curr_ins;
+	code[jmp].addr = curr_ins;
+	jmp = curr_ins;
 	cx0 = curr_ins;
 	gen(INT, 0, block_data_alloc_index);
 	set1 = createset(SYM_SEMICOLON, SYM_COMMA, SYM_END, SYM_NULL);
@@ -1632,13 +1673,13 @@ void interpret()
 			case OPR_EXIT:
 				flag = 1;
 				break;
-			case OPR_DEV://让栈降低
-			     top--;
-	        case OPR_JPN://为1时跳转
-			if (stack[top] == 0)
-				pc = i.addr;
-			top--;
-			break;
+			case OPR_DEV: // 让栈降低
+				top--;
+			case OPR_JPN: // 为1时跳转
+				if (stack[top] == 0)
+					pc = i.addr;
+				top--;
+				break;
 			} // switch
 			break;
 		case LOD:
@@ -1666,6 +1707,10 @@ void interpret()
 		case JPC:
 			if (stack[top] == 0)
 				pc = i.addr;
+			top--;
+			break;
+		case NSTO:
+			stack[base(stack, b, i.level) + i.addr] = stack[top];
 			top--;
 			break;
 		} // switch

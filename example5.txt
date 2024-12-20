@@ -1,12 +1,12 @@
-var a, b;
+var a, b,c;
 
 procedure func(var p, var q);
 begin
-  p := p + q;
+  c := p + q;
 end;
 
 begin
   a := 5;
   b := 3;
-  call func(a, b);
+  call func(a, b;);
 end.
