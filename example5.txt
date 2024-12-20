@@ -2,8 +2,7 @@ var a, b,c;
 
 procedure func(var p, var q);
 begin
-  c := p + q;
-  return c;
+  return p+q;
 end;
 
 begin
